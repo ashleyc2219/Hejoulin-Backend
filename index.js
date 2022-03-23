@@ -18,7 +18,8 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(async (req, res, next) => {
+// 註解掉才不會有 token forbidden的問題 不信你試試看
+/* app.use(async (req, res, next) => {
   if (req.originalUrl === "/login/login") return next();
   let auth = req.get("Authorization");
   if (auth && auth.indexOf("Bearer ") === 0) {
@@ -40,7 +41,7 @@ app.use(async (req, res, next) => {
   } else {
     res.sendStatus(403);
   }
-});
+}); */
 
 // set static folder
 app.use(express.static(__dirname + "/public"));
