@@ -66,7 +66,6 @@ app.use("/api/products-condition", require("./routes/products-condition"));
 app.use("/api/products-addcart", require("./routes/products-addcart"));
 app.use("/api/products-fav", require("./routes/products-fav"));
 app.use("/api/guide_q", require("./routes/guide_q"));
-app.use("/api/guide_a", require("./routes/guide_a"));
 app.use("/api/product_guide", require("./routes/guide_product"));
 app.use("/api/gift", require("./routes/gift"));
 app.use("/api/gift_container", require("./routes/gift_container"));
