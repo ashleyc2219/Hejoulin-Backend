@@ -1,5 +1,5 @@
 const express = require('express');
-const db = require('../modules/connect_mysql');
+const db = require("../modules/connect-db");
 const upload = require('./../modules/upload-images');
 const bcrypt = require("bcryptjs");
 const moment = require("moment-timezone");

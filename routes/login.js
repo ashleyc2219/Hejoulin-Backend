@@ -1,6 +1,6 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
-const db = require('./../modules/connect_mysql');
+const db = require("../modules/connect-db");
 const upload = require('./../modules/upload-images');
 const jwt = require("jsonwebtoken");
 
