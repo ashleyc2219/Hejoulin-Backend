@@ -59,6 +59,11 @@ app.use("/api/menu-pic", require("./routes/menu-pic"));
 app.use("/api/news", require("./routes/news"));
 app.use("/login", require("./routes/login"));
 app.use("/user", require("./routes/user"));
+app.use("/api/products-sake", require("./routes/products-sake"));
+app.use("/api/products-sake-filter", require("./routes/products-sake-filter"));
+app.use("/api/products-condition", require("./routes/products-condition"));
+app.use("/api/products-addcart", require("./routes/products-addcart"));
+app.use("/api/products-fav", require("./routes/products-fav"));
 
 const port = 3001;
 app.listen(port, () => {
