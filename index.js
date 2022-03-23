@@ -24,6 +24,7 @@ app.use("/api/restaurant", require("./routes/restaurant"));
 app.use("/api/restaurant-pic", require("./routes/restaurant-pic"));
 app.use("/api/spmenu", require("./routes/spmenu"));
 app.use("/api/menu-pic", require("./routes/menu-pic"));
+app.use("/api/news", require("./routes/news"));
 
 const port = 3001;
 app.listen(port, () => {
