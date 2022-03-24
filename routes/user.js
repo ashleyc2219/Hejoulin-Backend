@@ -3,7 +3,6 @@ const db = require("../modules/connect-db");
 const upload = require('./../modules/upload-images');
 const bcrypt = require("bcryptjs");
 const moment = require("moment-timezone");
-const app = express();
 const { jwtVerify } = require('../modules/jwtVerify')
 
 const router = express.Router();
