@@ -3,6 +3,7 @@ const db = require("../modules/connect-db");
 const upload = require('./../modules/upload-images');
 const bcrypt = require("bcryptjs");
 const moment = require("moment-timezone");
+const { jwtVerify } = require('../modules/jwtVerify')
 
 const router = express.Router();
 
@@ -73,13 +74,6 @@ async function getListData(req, res) {
     return output;
 }
 
-// 顯示全部會員資料
-// router.get('/', async (req, res) => {
-//     res.redirect('/user/list')
-// });
-// router.get('/list', async (req, res) => {
-//     res.render('user/list', await getListData(req, res));
-// });
 router.get('/api/list', async (req, res) => {
     res.json(await getListData(req, res));
 });
@@ -97,7 +91,7 @@ router.get('/api/auth-list', async (req, res) => {
 });
 
 // 帶會員id拿到單筆會員資料
-router.post('/member', async (req, res) => {
+router.post('/member', jwtVerify,async (req, res) => {
     const userAccount = res.locals.auth
     const [rs] = await db.query(`SELECT \`member_id\`,
                                         \`user_account\`,
@@ -124,7 +118,7 @@ router.put('/member', upload.single('avatar'), async (req, res) => {
 });
 
 // 帶會員id拿取酒標作品資料
-router.post('/member/MemberMark', async (req, res) => {
+router.post('/member/MemberMark', jwtVerify, async (req, res) => {
     const userAccount = res.locals.auth
     const [rs] = await db.query(`SELECT \`pics\`, \`mark_name\`
                                  FROM \`mark\`
@@ -133,7 +127,7 @@ router.post('/member/MemberMark', async (req, res) => {
 })
 
 // 帶會員id拿取收藏商品資料
-router.get('/member/MemberFav', async (req, res) => {
+router.get('/member/MemberFav', jwtVerify, async (req, res) => {
     const userAccount = res.locals.auth
     const [rs] = await db.query(`SELECT \`member_id\`, \`pro_price\`, \`pro_mark\`, \`pro_name\`, \`pro_img\`
                                  FROM \`product_sake\`
@@ -146,7 +140,7 @@ router.get('/member/MemberFav', async (req, res) => {
 })
 // 帶會員id修改收藏
 // 帶會員id拿取訂閱清單資料
-router.post('/member/MemberSublist', async (req, res) => {
+router.post('/member/MemberSublist', jwtVerify, async (req, res) => {
     const userAccount = res.locals.auth
     const [rs] = await db.query(`SELECT order_main.\`member_id\`,\`sub_time\`,\`order_sub_d\`.\`order_state\`,\`order_sub_d\`.\`subtime_id\`,\`order_sub_d\`.\`order_d_id\`
                                   FROM \`order_sub_d\`
@@ -177,7 +171,7 @@ router.post('/member/MemberSublist', async (req, res) => {
 });
 
 // 帶會員id拿取訂單總覽資料
-router.post('/member/MemberOrderList', async (req, res) => {
+router.post('/member/MemberOrderList', jwtVerify,async (req, res) => {
     const userAccount = res.locals.auth
     const fm = ('YYYY-MM-DD')
     const sql = `SELECT \`order_state\`, \`order_d_price\`, \`order_date\`, \`member_id\`, \`order_main\`.\`order_id\`
@@ -190,7 +184,7 @@ router.post('/member/MemberOrderList', async (req, res) => {
 });
 
 // 帶會員id拿取活動記錄資料
-router.post('/member/MemberEventList', async (req, res) => {
+router.post('/member/MemberEventList', jwtVerify,async (req, res) => {
     const userAccount = res.locals.auth
     const fm = ('YYYY-MM-DD')
     const sql = ` SELECT \`order_d_id\`,\`order_name\`,\`order_mobile\`,\`order_email\`,\`order_state\`,\`event_location\`,\`event_name\`,\`event_time_start\`, \`order_event_d\`.\`order_id\`,\`order_d_price\`,\`order_date\`,\`member_id\`

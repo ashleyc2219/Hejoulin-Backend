@@ -1,8 +1,6 @@
 const express = require("express");
 const app = express();
 const fs = require("fs").promises;
-const jwt = require("jsonwebtoken");
-const db = require("./modules/connect-db");
 // cors 跨源請求
 const cors = require("cors");
 
@@ -18,30 +16,6 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-// 註解掉才不會有 token forbidden的問題 不信你試試看
-/* app.use(async (req, res, next) => {
-  if (req.originalUrl === "/login/login") return next();
-  let auth = req.get("Authorization");
-  if (auth && auth.indexOf("Bearer ") === 0) {
-    auth = auth.slice(7);
-    jwt.verify(auth, process.env.JWT_KEY, async (err, member) => {
-      if (err) {
-        res.sendStatus(403);
-      } else {
-        let memberInfo = await db.query(
-          `SELECT a1.user_id, a1.user_account, a2.member_id
-            FROM user AS a1, member AS a2
-             WHERE a1.user_id = a2.user_id AND a1.user_account = ?`,
-          [member.user_account]
-        );
-        res.locals.auth = memberInfo[0][0];
-        next();
-      }
-    });
-  } else {
-    res.sendStatus(403);
-  }
-}); */
 
 // set static folder
 app.use(express.static(__dirname + "/public"));
@@ -71,7 +45,6 @@ app.use("/api/gift", require("./routes/gift"));
 app.use("/api/gift_container", require("./routes/gift_container"));
 app.use("/api/product_gift", require("./routes/gift_product"));
 app.use("/api/mark", require("./routes/mark"));
-
 const port = 3001;
 app.listen(port, () => {
   console.log(`server started ${port} - `, new Date());
