@@ -112,13 +112,14 @@ router.put('/mark', async(req, res) =>{
     output.result = result
     res.json(output)
 })
+/* TODO: 新增 酒標購物車 酒標 --- */
 
 
 
 /* 禮盒 購物車 --- */
 // TODO:
 //  member_id要去拿登入的member_id
-// 
+/// TODO: 禮盒送去前端的資料 要做合併跟處理
 router.get('/gift', async(req, res) => {
     const member_id = req.body.member_id ? parseInt(req.body.member_id) : 'no member_id'
     console.log(member_id)
