@@ -23,10 +23,12 @@ app.use(express.static(__dirname + "/public"));
 app.get("/", function (req, res) {
   res.send("<p>Hello express</p>");
 });
-// app.use("/api/product", require("./routes/product"));
+
 app.use("/api/cart-list", require("./routes/cart-list"));
 app.use("/api/cart-info", require("./routes/cart-info"));
 app.use("/api/cart-order", require("./routes/cart-order"));
+app.use("/api/cart-order-confirm", require("./routes/cart-order-confirm"));
+
 app.use("/api/restaurant", require("./routes/restaurant"));
 app.use("/api/restaurant-pic", require("./routes/restaurant-pic"));
 app.use("/api/spmenu", require("./routes/spmenu"));
