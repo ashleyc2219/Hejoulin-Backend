@@ -1,8 +1,6 @@
 const express = require("express");
 const app = express();
 const fs = require("fs").promises;
-const jwt = require("jsonwebtoken");
-const db = require("./modules/connect-db");
 // cors 跨源請求
 const cors = require("cors");
 
@@ -47,7 +45,6 @@ app.use("/api/gift", require("./routes/gift"));
 app.use("/api/gift_container", require("./routes/gift_container"));
 app.use("/api/product_gift", require("./routes/gift_product"));
 app.use("/api/mark", require("./routes/mark"));
-
 const port = 3001;
 app.listen(port, () => {
   console.log(`server started ${port} - `, new Date());

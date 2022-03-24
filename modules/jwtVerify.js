@@ -1,5 +1,6 @@
+require('dotenv').config();
 const jwt = require("jsonwebtoken");
-const db = require("./modules/connect-db");
+const db = require("../modules/connect-db");
 
 function jwtVerify (req, res, next) {
   if (req.originalUrl === "/login/login") return next();
@@ -8,6 +9,7 @@ function jwtVerify (req, res, next) {
     auth = auth.slice(7);
     jwt.verify(auth, process.env.JWT_KEY, async (err, member) => {
       if (err) {
+        console.log(err);
         res.sendStatus(403);
       } else {
         let memberInfo = await db.query(
