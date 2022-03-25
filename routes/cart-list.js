@@ -12,7 +12,7 @@ router.get("/sake", async (req, res) => {
   const member_id = req.query.member_id ? parseInt(req.query.member_id) : 1;
   console.log(member_id);
   const sql = `
-   SELECT cs.*, cm.mark_id, mark.pics, ps.pro_name, ps.pro_img, pf.pro_price, pf.pro_capacity, pf.pro_gift, pf.pro_mark 
+   SELECT cs.*, cm.mark_id, mark.pics, mark.mark_name, ps.pro_name, ps.pro_img, pf.pro_price, pf.pro_capacity, pf.pro_gift, pf.pro_mark 
     FROM cart_sake cs 
     LEFT JOIN cart_mark cm 
     ON cs.cart_sake_id=cm.cart_sake_id 
