@@ -171,7 +171,6 @@ router.get("/gift", async (req, res) => {
           pro_capacity: i.pro_capacity ,
         };
       } else {
-        console.log("same", twoInOne_cartGiftId);
         twoInOne.pro_two = {
           pro_id: i.pro_id,
           pro_name: i.pro_name,
@@ -180,11 +179,9 @@ router.get("/gift", async (req, res) => {
           pro_capacity: i.pro_capacity,
         };
         tidyResult = [...tidyResult, {...twoInOne}];
-        console.log(tidyResult)
       }
     } else {
       tidyResult = [...tidyResult, i];
-      console.log(tidyResult);
     }
   }
   res.json(tidyResult);
