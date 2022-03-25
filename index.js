@@ -41,12 +41,17 @@ app.use("/api/products-sake-filter", require("./routes/products-sake-filter"));
 app.use("/api/products-condition", require("./routes/products-condition"));
 app.use("/api/products-addcart", require("./routes/products-addcart"));
 app.use("/api/products-fav", require("./routes/products-fav"));
+
 app.use("/api/guide_q", require("./routes/guide_q"));
-app.use("/api/product_guide", require("./routes/guide_product"));
+app.use("/api/product_guide", require("./routes/product_guide"));
+
 app.use("/api/gift", require("./routes/gift"));
 app.use("/api/gift_container", require("./routes/gift_container"));
-app.use("/api/product_gift", require("./routes/gift_product"));
+app.use("/api/product_gift", require("./routes/product_gift"));
+app.use("/api/gift_addcart", require("./routes/gift_addcart"));
+
 app.use("/api/mark", require("./routes/mark"));
+
 const port = 3001;
 app.listen(port, () => {
   console.log(`server started ${port} - `, new Date());
