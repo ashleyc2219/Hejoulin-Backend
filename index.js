@@ -45,6 +45,7 @@ app.use("/api/gift", require("./routes/gift"));
 app.use("/api/gift_container", require("./routes/gift_container"));
 app.use("/api/product_gift", require("./routes/gift_product"));
 app.use("/api/mark", require("./routes/mark"));
+app.use("/api/event", require("./routes/event"));
 const port = 3001;
 app.listen(port, () => {
   console.log(`server started ${port} - `, new Date());
