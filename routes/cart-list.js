@@ -127,10 +127,10 @@ router.put("/mark", async (req, res) => {
 //  member_id要去拿登入的member_id
 /// TODO: 禮盒送去前端的資料 要做合併跟處理
 router.get("/gift", async (req, res) => {
-  const member_id = req.body.member_id
-    ? parseInt(req.body.member_id)
+  const member_id = req.query.member_id
+    ? parseInt(req.query.member_id)
     : "no member_id";
-  console.log(member_id);
+  //   console.log(member_id);
   const sql = `
     SELECT cg.*, cgd.pro_id, pg.gift_name, ps.pro_name, ps.pro_img, pf.pro_price, pf.pro_capacity, pc.container_name, pc.container_img, pc.container_shadow 
     FROM cart_gift cg 
@@ -147,7 +147,48 @@ router.get("/gift", async (req, res) => {
     WHERE cg.member_id=${member_id}
     `;
   const [result, fields] = await db.query(sql);
-  res.json(result);
+  let tidyResult = [];
+  let twoInOne = {};
+  let twoInOne_cartGiftId = 0;
+
+  for (const i of result) {
+    if (i.gift_id === 3) {
+      if (i.cart_gift_id !== twoInOne_cartGiftId) {
+        twoInOne_cartGiftId = i.cart_gift_id;
+        console.log(twoInOne_cartGiftId);
+        twoInOne.cart_gift_id = i.cart_gift_id;
+        twoInOne.member_id = i.member_id;
+        twoInOne.cart_quantity = i.cart_quantity;
+        twoInOne.gift_id = i.gift_id;
+        twoInOne.gift_name = i.gift_name;
+        twoInOne.box_color = i.box_color;
+
+        twoInOne.pro_one = {
+          pro_id: i.pro_id ,
+          pro_name: i.pro_name ,
+          pro_img: i.pro_img ,
+          pro_price: i.pro_price ,
+          pro_capacity: i.pro_capacity ,
+        };
+      } else {
+        console.log("same", twoInOne_cartGiftId);
+        twoInOne.pro_two = {
+          pro_id: i.pro_id,
+          pro_name: i.pro_name,
+          pro_img: i.pro_img,
+          pro_price: i.pro_price,
+          pro_capacity: i.pro_capacity,
+        };
+        tidyResult = [...tidyResult, {...twoInOne}];
+        console.log(tidyResult)
+      }
+    } else {
+      tidyResult = [...tidyResult, i];
+      console.log(tidyResult);
+    }
+  }
+  res.json(tidyResult);
+  //   res.json(result);
 });
 
 /* 刪除 禮盒購物車 商品 */
