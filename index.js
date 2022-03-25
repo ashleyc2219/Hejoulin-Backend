@@ -28,6 +28,7 @@ app.use("/api/cart-list", require("./routes/cart-list"));
 app.use("/api/cart-info", require("./routes/cart-info"));
 app.use("/api/cart-order", require("./routes/cart-order"));
 app.use("/api/cart-order-confirm", require("./routes/cart-order-confirm"));
+app.use("/api/sub", require("./routes/sub"));
 
 app.use("/api/restaurant", require("./routes/restaurant"));
 app.use("/api/restaurant-pic", require("./routes/restaurant-pic"));
