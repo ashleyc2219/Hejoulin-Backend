@@ -51,11 +51,7 @@ app.use("/api/product_gift", require("./routes/product_gift"));
 app.use("/api/gift_addcart", require("./routes/gift_addcart"));
 
 app.use("/api/mark", require("./routes/mark"));
-<<<<<<< HEAD
 app.use("/api/event", require("./routes/event"));
-=======
-
->>>>>>> c291d677b7c0e362d4f06b5a000d12cd254a7e5e
 const port = 3001;
 app.listen(port, () => {
   console.log(`server started ${port} - `, new Date());
