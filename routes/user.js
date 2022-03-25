@@ -120,9 +120,7 @@ router.put('/member', upload.single('avatar'), async (req, res) => {
 // 帶會員id拿取酒標作品資料
 router.post('/member/MemberMark', jwtVerify, async (req, res) => {
     const userAccount = res.locals.auth
-    const [rs] = await db.query(`SELECT \`pics\`, \`mark_name\`
-                                 FROM \`mark\`
-                                 WHERE \`member_id\` = ${userAccount['member_id']} `)
+    const [rs] = await db.query(`SELECT pics FROM mark WHERE member_id = ${userAccount['member_id']}`)
     res.json(rs)
 })
 

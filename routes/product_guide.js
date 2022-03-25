@@ -1,6 +1,8 @@
 const router = require("express").Router();
 const db = require("../modules/connect-db");
 
+// Get kind of gift: http://localhost:3500/api/product_guide
+// 指南推薦酒
 router.get("/", async (req, res) => {
   if (req.query.ans) {
     const taste = req.query.pro_taste ? req.query.pro_taste : "";
@@ -16,11 +18,11 @@ router.get("/", async (req, res) => {
     if (priceLow || priceHigh)
       where += ` AND pf.pro_price BETWEEN ${priceLow} AND ${priceHigh}`;
 
-    const sql = `SELECT * FROM product_sake ps JOIN  product_format pf ON pf.format_id = ps.format_id ${where}`;
+    const sql = `SELECT * FROM product_sake ps JOIN  product_format pf ON pf.format_id = ps.format_id ${where} LIMIT 3`;
     const [rs, fields] = await db.query(sql);
     res.json(rs);
   }
-  const sql = `SELECT * FROM product_sake ps JOIN  product_format pf ON pf.format_id = ps.format_id`;
+  const sql = `SELECT * FROM product_sake ps JOIN  product_format pf ON pf.format_id = ps.format_id LIMIT 3`;
   const [rs, fields] = await db.query(sql);
   res.json(rs);
 });
