@@ -105,6 +105,7 @@ router.post('/member', jwtVerify,async (req, res) => {
                                  WHERE member_id = ${userAccount['member_id']} `)
     res.json(rs)
 });
+// 改大頭貼
 router.put('/member', upload.single('avatar'), async (req, res) => {
     let modifyAvatar = ''
     const userAccount = req.locals.auth
@@ -113,6 +114,18 @@ router.put('/member', upload.single('avatar'), async (req, res) => {
     }
     const sql = `UPDATE user
                  SET user_account=? ${modifyAvatar}
+                 WHERE member_id=${userAccount['member_id']}`
+    await db.query(sql)
+});
+// 改密碼
+router.put('/member-passChange', upload.none, async (req, res) => {
+    let user_account = ''
+    const userAccount = req.locals.auth
+    if (req.file && req.file.filename) {
+      user_account = ` , avatar='${req.file.filename}'`
+    }
+    const sql = `UPDATE user
+                 SET user_account=? ${user_account}
                  WHERE member_id=${userAccount['member_id']}`
     await db.query(sql)
 });

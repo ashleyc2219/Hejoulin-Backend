@@ -74,6 +74,7 @@ router.post('/register', async (req, res) => {
     }
     res.json(output);
 });
+
 router.post('/account-check', async (req, res) => {
 
     const sql = "SELECT `user_account` FROM user WHERE `user_account`=?";
@@ -81,7 +82,8 @@ router.post('/account-check', async (req, res) => {
 
     res.json({used: !!rs.length});
 });
-router.post('/send-email', upload.none(),async (req, res) => {
+// 寄email從打過來的郵件位址
+router.post('/send-email', upload.none(), async (req, res) => {
 
     const sql = "SELECT `verify_code` FROM verify";
     const [rs] = await db.query(sql);
@@ -115,15 +117,7 @@ router.post('/send-email', upload.none(),async (req, res) => {
         // 純文字
         text: '禾酒林 : 密碼驗證信', // plaintext body
         // 嵌入 html 的內文
-        html: `<h2>驗證碼</h2> <p>` + verifyCode + `</p>`,
-        // 附件檔案
-        attachments: [ {
-            filename: '4-2.png',
-            path: 'public/images/member_mark_pic/4-2.png'
-        }, {
-            filename: 'text01.txt',
-            content: '聯候家上去工的調她者壓工，我笑它外有現，血有到同，民由快的重觀在保導然安作但。護見中城備長結現給都看面家銷先然非會生東一無中；內他的下來最書的從人聲觀說的用去生我，生節他活古視心放十壓心急我我們朋吃，毒素一要溫市歷很爾的房用聽調就層樹院少了紀苦客查標地主務所轉，職計急印形。團著先參那害沒造下至算活現興質美是為使！色社影；得良灣......克卻人過朋天點招？不族落過空出著樣家男，去細大如心發有出離問歡馬找事'
-        }]
+        html: `<h2>驗證碼</h2> <p>` + verifyCode.slice(0,3) + `-` + verifyCode.slice(3,6) + `</p>`,
     };
 
     // 發送信件方法
@@ -132,10 +126,23 @@ router.post('/send-email', upload.none(),async (req, res) => {
             console.log(error);
         } else {
             console.log('訊息發送: ' + info.response);
-            res.status(200).send({ message:"郵件已寄出", message_id: info.messageId })
+            res.status(200).send({ message:"郵件已寄出", message_id: info.messageId });
         }
     });
 });
+
+// 查驗驗證碼是否相符
+router.post('/code-verify', upload.none(), async (req,res)=>{
+
+    const sql = "SELECT `verify_code` FROM verify";
+    const [rs] = await db.query(sql);
+    const enterCode = req.body.verifyCodeFirst + req.body.verifyCodeLast
+    if (rs[0].verify_code === enterCode){
+        res.status(200).send({ message:"驗證成功" });
+    }
+
+})
+
 
 
 module.exports = router;
