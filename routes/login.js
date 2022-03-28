@@ -58,13 +58,16 @@ router.post('/register', async (req, res) => {
         "VALUES ( ?, ?,NOW());";
 
     let result;
+
     try {
         [result] = await db.query(sql, [
             req.body.user_account,
             hash,
         ]);
+
         if (result.affectedRows === 1) {
             output.success = true;
+
         } else {
             output.error = '無法新增會員';
         }
@@ -72,6 +75,7 @@ router.post('/register', async (req, res) => {
         console.log(ex);
         output.error = 'Email 已被使用過';
     }
+
     res.json(output);
 });
 
