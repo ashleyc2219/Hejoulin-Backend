@@ -140,7 +140,7 @@ router.post('/member/MemberMark', jwtVerify, async (req, res) => {
 // 帶會員id拿取收藏商品資料
 router.post('/member/MemberFav', jwtVerify, async (req, res) => {
     const userAccount = res.locals.auth;
-    const [rs] = await db.query(`SELECT \`member_id\`, \`pro_price\`, \`pro_mark\`, \`pro_name\`, \`pro_img\`
+    const [rs] = await db.query(`SELECT \`member_id\`, \`pro_price\`, \`pro_mark\`, \`pro_name\`, \`pro_img\`,\`favorite\`.\`pro_id\`
                                  FROM \`product_sake\`
                                           INNER JOIN \`favorite\`
                                                      ON \`favorite\`.\`pro_id\` = \`product_sake\`.\`pro_id\`
@@ -148,6 +148,24 @@ router.post('/member/MemberFav', jwtVerify, async (req, res) => {
                                                      ON \`product_format\`.\`format_id\` = \`product_sake\`.\`format_id\`
                                  WHERE \`member_id\` = ${userAccount['member_id']}`);
     res.json(rs);
+})
+// 用來連動全站的愛心元件
+router.post('/member/MemberFav-heart',  async (req, res) => {
+  let auth = req.get("Authorization");
+  const getInfo = await db.query(
+    `SELECT a1.user_id, a1.user_account, a2.member_id
+            FROM user AS a1, member AS a2
+             WHERE a1.user_id = a2.user_id AND a1.user_account = ?`,
+    [auth]
+  );
+  const [rs] = await db.query(`SELECT \`member_id\`, \`pro_price\`, \`pro_mark\`, \`pro_name\`, \`pro_img\`,\`favorite\`.\`pro_id\`
+                                 FROM \`product_sake\`
+                                          INNER JOIN \`favorite\`
+                                                     ON \`favorite\`.\`pro_id\` = \`product_sake\`.\`pro_id\`
+                                          INNER JOIN \`product_format\`
+                                                     ON \`product_format\`.\`format_id\` = \`product_sake\`.\`format_id\`
+                                 WHERE \`member_id\` = ${getInfo['member_id']}`);
+  res.json(rs);
 })
 // 帶會員id修改收藏
 // 帶會員id拿取訂閱清單資料
@@ -270,3 +288,4 @@ router.route('/edit/:user_id')
     })
 
 module.exports = router;
+
