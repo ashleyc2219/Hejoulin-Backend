@@ -18,7 +18,7 @@ router.post("/", async (req, res) => {
   let cart_id = "G" + get_cart_id.padStart(10, "0");
   console.log(cart_id);
 
-  async () => {
+  (async () => {
     const output1 = {
       success: false,
       error: "",
@@ -35,9 +35,9 @@ router.post("/", async (req, res) => {
     output1.success = !!result.affectedRows;
     output1.result = result;
     output=[...output1, output]
-  }
+  })()
   
-  async()=>{
+  (async()=>{
     const output2 = {
         success: false,
         error: "",
@@ -51,7 +51,7 @@ router.post("/", async (req, res) => {
       output2.success = !!result.affectedRows;
       output2.result = result;
       output = [...output2,output]
-    }
+    })()
   res.json(output);
 });
 

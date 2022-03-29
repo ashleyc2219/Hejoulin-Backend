@@ -9,11 +9,11 @@ router.get("/", async (req, res) => {
     const { gift } = req.query;
     const sql = `SELECT * FROM product_sake ps JOIN  product_format pf ON pf.format_id = ps.format_id WHERE pf.pro_gift = ${gift}`;
     const [rs, fields] = await db.query(sql);
-    res.json(rs);
+    return res.json(rs);
   }
   const sql = `SELECT * FROM product_sake ps JOIN  product_format pf ON pf.format_id = ps.format_id WHERE pf.pro_gift >0`;
   const [rs, fields] = await db.query(sql);
-  res.json(rs);
+  return res.json(rs);
 });
 
 module.exports = router;
