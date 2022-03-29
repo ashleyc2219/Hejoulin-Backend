@@ -105,67 +105,98 @@ router.post('/member', jwtVerify,async (req, res) => {
                                  WHERE member_id = ${userAccount['member_id']} `)
     res.json(rs)
 });
+// 改大頭貼
 router.put('/member', upload.single('avatar'), async (req, res) => {
-    let modifyAvatar = ''
-    const userAccount = req.locals.auth
+    let modifyAvatar = '';
+    const userAccount = req.locals.auth;
     if (req.file && req.file.filename) {
-        modifyAvatar = ` , avatar='${req.file.filename}'`
+        modifyAvatar = ` , avatar='${req.file.filename}'`;
     }
     const sql = `UPDATE user
                  SET user_account=? ${modifyAvatar}
-                 WHERE member_id=${userAccount['member_id']}`
-    await db.query(sql)
+                 WHERE member_id=${userAccount['member_id']}`;
+    await db.query(sql);
+});
+// 改密碼
+router.put('/member-passChange', upload.none, async (req, res) => {
+    let user_account = '';
+    const userAccount = req.locals.auth;
+    if (req.file && req.file.filename) {
+      user_account = ` , avatar='${req.file.filename}'`
+    }
+    const sql = `UPDATE user
+                 SET user_pass=? ${user_account}
+                 WHERE user_account=${userAccount['user_account']}`;
+    await db.query(sql);
 });
 
 // 帶會員id拿取酒標作品資料
 router.post('/member/MemberMark', jwtVerify, async (req, res) => {
-    const userAccount = res.locals.auth
-    const [rs] = await db.query(`SELECT pics FROM mark WHERE member_id = ${userAccount['member_id']}`)
-    res.json(rs)
+    const userAccount = res.locals.auth;
+    const [rs] = await db.query(`SELECT pics FROM mark WHERE member_id = ${userAccount['member_id']}`);
+    res.json(rs);
 })
 
 // 帶會員id拿取收藏商品資料
-router.get('/member/MemberFav', jwtVerify, async (req, res) => {
-    const userAccount = res.locals.auth
-    const [rs] = await db.query(`SELECT \`member_id\`, \`pro_price\`, \`pro_mark\`, \`pro_name\`, \`pro_img\`
+router.post('/member/MemberFav', jwtVerify, async (req, res) => {
+    const userAccount = res.locals.auth;
+    const [rs] = await db.query(`SELECT \`member_id\`, \`pro_price\`, \`pro_mark\`, \`pro_name\`, \`pro_img\`,\`favorite\`.\`pro_id\`
                                  FROM \`product_sake\`
                                           INNER JOIN \`favorite\`
                                                      ON \`favorite\`.\`pro_id\` = \`product_sake\`.\`pro_id\`
                                           INNER JOIN \`product_format\`
                                                      ON \`product_format\`.\`format_id\` = \`product_sake\`.\`format_id\`
-                                 WHERE \`member_id\` = ${userAccount['member_id']}`)
-    res.json(rs)
+                                 WHERE \`member_id\` = ${userAccount['member_id']}`);
+    res.json(rs);
+})
+// 用來連動全站的愛心元件
+router.post('/member/MemberFav-heart',  async (req, res) => {
+  let auth = req.get("Authorization");
+  const getInfo = await db.query(
+    `SELECT a1.user_id, a1.user_account, a2.member_id
+            FROM user AS a1, member AS a2
+             WHERE a1.user_id = a2.user_id AND a1.user_account = ?`,
+    [auth]
+  );
+  const [rs] = await db.query(`SELECT \`member_id\`, \`pro_price\`, \`pro_mark\`, \`pro_name\`, \`pro_img\`,\`favorite\`.\`pro_id\`
+                                 FROM \`product_sake\`
+                                          INNER JOIN \`favorite\`
+                                                     ON \`favorite\`.\`pro_id\` = \`product_sake\`.\`pro_id\`
+                                          INNER JOIN \`product_format\`
+                                                     ON \`product_format\`.\`format_id\` = \`product_sake\`.\`format_id\`
+                                 WHERE \`member_id\` = ${getInfo['member_id']}`);
+  res.json(rs);
 })
 // 帶會員id修改收藏
 // 帶會員id拿取訂閱清單資料
 router.post('/member/MemberSublist', jwtVerify, async (req, res) => {
-    const userAccount = res.locals.auth
+    const userAccount = res.locals.auth;
     const [rs] = await db.query(`SELECT order_main.\`member_id\`,\`sub_time\`,\`order_sub_d\`.\`order_state\`,\`order_sub_d\`.\`subtime_id\`,\`order_sub_d\`.\`order_d_id\`
                                   FROM \`order_sub_d\`
                                            INNER JOIN \`order_main\`
                                                       ON \`order_main\`.\`order_id\` = \`order_sub_d\`.\`order_id\`
                                            INNER JOIN \`sub_time\`
                                                       ON \`sub_time\`.\`subtime_id\` = \`order_sub_d\`.\`subtime_id\`
-                                  WHERE \`order_main\`.\`member_id\` = ${userAccount['member_id']}`)
+                                  WHERE \`order_main\`.\`member_id\` = ${userAccount['member_id']}`);
 
     const [rs2] = await db.query(`SELECT \`sub_plan\`, \`sub_price\`, \`member_id\`
                                    FROM \`order_sub_d\`
                                             INNER JOIN \`order_main\`
                                                        ON \`order_main\`.\`order_id\` = \`order_sub_d\`.\`order_id\`
                                             INNER JOIN \`sub_plan\` ON \`sub_plan\`.\`sub_id\` = \`order_sub_d\`.\`sub_id\`
-                                   WHERE \`order_main\`.\`member_id\` = ${userAccount['member_id']}`)
+                                   WHERE \`order_main\`.\`member_id\` = ${userAccount['member_id']}`);
     const [rs3] = await db.query(`SELECT \`card_num\`, \`member_id\`
                                    FROM \`payment_detail\`
                                             INNER JOIN \`order_main\`
                                                        ON \`order_main\`.\`order_id\` = \`payment_detail\`.\`order_id\`
-                                   WHERE \`member_id\` = ${userAccount['member_id']}`)
+                                   WHERE \`member_id\` = ${userAccount['member_id']}`);
 
     const output = {
         data1: rs[0],
         data2: rs2[0],
         data3: rs3[0],
-    }
-    res.json(output)
+    };
+    res.json(output);
 });
 
 // 帶會員id拿取訂單總覽資料
@@ -177,22 +208,22 @@ router.post('/member/MemberOrderList', jwtVerify,async (req, res) => {
                           INNER JOIN \`order_sake_d\` ON \`order_sake_d\`.\`order_id\` = \`order_main\`.\`order_id\`
                  WHERE \`member_id\` = ${userAccount['member_id']}`;
     const [rs] = await db.query(sql);
-    const rs2 = rs.map((v) => ({...v, order_date: moment(v.order_date).format(fm)}))
-    res.json(rs2)
+    const rs2 = rs.map((v) => ({...v, order_date: moment(v.order_date).format(fm)}));
+    res.json(rs2);
 });
 
 // 帶會員id拿取活動記錄資料
-router.post('/member/MemberEventList', jwtVerify,async (req, res) => {
-    const userAccount = res.locals.auth
-    const fm = ('YYYY-MM-DD')
+router.post('/member/MemberEventList', jwtVerify, async (req, res) => {
+    const userAccount = res.locals.auth;
+    const fm = ('YYYY-MM-DD');
     const sql = ` SELECT \`order_d_id\`,\`order_name\`,\`order_mobile\`,\`order_email\`,\`order_state\`,\`event_location\`,\`event_name\`,\`event_time_start\`, \`order_event_d\`.\`order_id\`,\`order_d_price\`,\`order_date\`,\`member_id\`
                  FROM \`order_main\` 
                      INNER JOIN \`order_event_d\` ON \`order_main\`.\`order_id\` = \`order_event_d\`.\`order_id\` 
                      INNER JOIN \`event\` ON \`event\`.\`event_id\` = \`order_event_d\`.\`event_id\` 
                  WHERE \`member_id\` = ${userAccount['member_id']} `;
-    const [rs] = await db.query(sql)
-    const rs2 = rs.map((v) => ({...v, event_time_start: moment(v.event_time_start).format(fm)}))
-    res.json(rs2)
+    const [rs] = await db.query(sql);
+    const rs2 = rs.map((v) => ({...v, event_time_start: moment(v.event_time_start).format(fm)}));
+    res.json(rs2);
 });
 
 // 修改會員資料
@@ -257,3 +288,4 @@ router.route('/edit/:user_id')
     })
 
 module.exports = router;
+

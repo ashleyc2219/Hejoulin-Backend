@@ -17,7 +17,7 @@ router.get("/", async (req, res) => {
     const [rs, fields] = await db.query(sql);
     return res.json(rs);
   }
-  const sql = "SELECT * FROM event";
+  const sql = "SELECT * FROM `event` e LEFT JOIN `event_cat` ec ON e.event_cat_id = ec.event_cat_id ";
   const [rs, fields] = await db.query(sql);
   res.json(rs);
 });
