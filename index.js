@@ -42,7 +42,7 @@ app.use("/api/products-sake-filter", require("./routes/products-sake-filter"));
 app.use("/api/products-condition", require("./routes/products-condition"));
 app.use("/api/products-addcart", require("./routes/products-addcart"));
 app.use("/api/products-fav", require("./routes/products-fav"));
-app.use("/api/products-cart-quantity", require("./routes/products-cart-quantity"));
+// app.use("/api/products-cart-quantity", require("./routes/products-cart-quantity"));
 
 app.use("/api/guide_q", require("./routes/guide_q"));
 app.use("/api/product_guide", require("./routes/product_guide"));
