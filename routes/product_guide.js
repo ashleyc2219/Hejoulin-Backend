@@ -20,11 +20,11 @@ router.get("/", async (req, res) => {
 
     const sql = `SELECT * FROM product_sake ps JOIN  product_format pf ON pf.format_id = ps.format_id ${where} LIMIT 3`;
     const [rs, fields] = await db.query(sql);
-    res.json(rs);
+    return res.json(rs);
   }
   const sql = `SELECT * FROM product_sake ps JOIN  product_format pf ON pf.format_id = ps.format_id LIMIT 3`;
   const [rs, fields] = await db.query(sql);
-  res.json(rs);
+  return res.json(rs);
 });
 
 module.exports = router;

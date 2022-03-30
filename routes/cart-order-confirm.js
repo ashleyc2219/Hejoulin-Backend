@@ -36,7 +36,7 @@ router.get("/order-gift", async (req, res) => {
     ? parseInt(req.query.order_id)
     : "20220110001";
   const sql = `SELECT omain.order_id, og.order_quantity, og.order_d_price, 
-                og.gift_id, og.box_color, ogdd.pro_id, ps.pro_name, ps.pro_img, pf.pro_price, pf.pro_capacity
+                og.gift_id, og.box_color, ogdd.pro_id, ps.pro_name, ps.pro_img, pf.pro_price, pf.pro_capacity, pg.gift_name
                 FROM order_main omain
 
                 LEFT JOIN order_gift_d og
@@ -54,9 +54,49 @@ router.get("/order-gift", async (req, res) => {
                 LEFT JOIN product_container pc
                 ON pf.container_id=pc.container_id
 
+                LEFT JOIN product_gift pg 
+                ON og.gift_id=pg.gift_id
+
                 WHERE omain.order_id =?;`;
   const [result, fields] = await db.query(sql, [order_id]);
-  res.json(result);
+  let tidyResult = [];
+  let twoInOne = {};
+  let twoInOne_cartGiftId = 0;
+  for (const i of result) {
+    if (i.gift_id === 3) {
+      if (i.cart_gift_id !== twoInOne_cartGiftId) {
+        twoInOne_cartGiftId = i.cart_gift_id;
+        console.log(twoInOne_cartGiftId);
+        twoInOne.cart_gift_id = i.cart_gift_id;
+        twoInOne.member_id = i.member_id;
+        twoInOne.order_quantity = i.order_quantity;
+        twoInOne.gift_id = i.gift_id;
+        twoInOne.gift_name = i.gift_name;
+        twoInOne.box_color = i.box_color;
+
+        twoInOne.pro_one = {
+          pro_id: i.pro_id,
+          pro_name: i.pro_name,
+          pro_img: i.pro_img,
+          pro_price: i.pro_price,
+          pro_capacity: i.pro_capacity,
+        };
+      } else {
+        twoInOne.pro_two = {
+          pro_id: i.pro_id,
+          pro_name: i.pro_name,
+          pro_img: i.pro_img,
+          pro_price: i.pro_price,
+          pro_capacity: i.pro_capacity,
+        };
+        tidyResult = [...tidyResult, { ...twoInOne }];
+      }
+    } else {
+      tidyResult = [...tidyResult, i];
+    }
+  }
+  res.json(tidyResult);
+  // res.json(result);
 });
 
 router.get("/order-info", async (req, res) => {
