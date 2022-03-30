@@ -7,7 +7,7 @@ router.get("/items", async (req, res) => {
   const sql =
     "SELECT * FROM product_sake ps LEFT JOIN product_format pf ON ps.format_id = pf.format_id";
   const [rs, fields] = await db.query(sql);
-  res.json(rs);
+  return res.json(rs);
 });
 
 router.get("/item-detail", async (req, res) => {
@@ -16,7 +16,7 @@ router.get("/item-detail", async (req, res) => {
   console.log(pro_id);
   const sql = `SELECT * FROM product_sake ps LEFT JOIN product_format pf ON ps.format_id = pf.format_id WHERE pro_id = ${pro_id}`;
   const [rs, fields] = await db.query(sql);
-  res.json(rs);
+  return res.json(rs);
 });
 
 
