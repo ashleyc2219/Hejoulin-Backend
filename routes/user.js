@@ -105,8 +105,8 @@ router.post("/member", jwtVerify, async (req, res) => {
   res.json(rs);
 });
 
-// 改密碼
-router.put("/member/passChange", upload.none(), async (req, res) => {
+// 忘記密碼 - 改密碼
+router.put("/member/forgetPassChange", upload.none(), async (req, res) => {
   const output = {
     success: false,
     postData: req.body,
@@ -146,6 +146,62 @@ router.put("/member/passChange", upload.none(), async (req, res) => {
 
 });
 
+// 會員中心檢查舊密碼是否正確
+router.post("/pass-check", async (req, res) => {
+
+  const sql = "SELECT `user_pass` FROM user WHERE `user_pass`=?";
+  const hash = await bcrypt.hash(req.body.user_pass, 10);
+  const [rs] = await db.query(sql, [hash || "aa"]);
+  if (rs.length) {
+    res.json({ used: "have" });
+  } else {
+    res.json({ used: "noAccount" });
+  }
+
+});
+// 會員中心更改密碼
+router.put("/member/passChange", jwtVerify, async (req, res) => {
+  const output = {
+    success: false,
+    postData: req.body,
+    error: ""
+  };
+  console.log(req.body);
+  const userPass = req.body.user_pass;
+  // console.log(res.locals.auth);
+  const userAccount = res.locals.auth.user_account;
+  // console.log(userPass);
+  // console.log(userAccount);
+  // if (req.body && userPass) {
+  //   // user_pass = ` , user_pass='${req.body.user_pass}'`;
+  // }
+
+  const hash = await bcrypt.hash(userPass, 10);
+  console.log(hash);
+
+  const sql = `UPDATE user
+               SET user_pass=?
+               WHERE user_account = ?`;
+
+  try {
+    [result] = await db.query(sql, [hash, userAccount]);
+    console.log(result);
+    if (result.affectedRows === 1) {
+      output.success = true;
+
+    } else {
+      output.error = "設定密碼失敗";
+    }
+  } catch (ex) {
+    console.log(ex);
+    output.error = "建議您檢查是否輸入新密碼";
+
+  }
+
+  res.json(output);
+
+});
+
 // 帶會員id拿取酒標作品資料
 router.post("/member/MemberMark", jwtVerify, async (req, res) => {
   const userAccount = res.locals.auth;
@@ -172,8 +228,9 @@ router.post("/member/MemberFav", jwtVerify, async (req, res) => {
                                WHERE \`member_id\` = ${userAccount["member_id"]}`);
   res.json(rs);
 });
-// 控制收藏愛心 // 取消收藏
-router.post("/member/MemberFav-heart-delete", async (req, res) => {
+
+// 控制收藏愛心以取消收藏
+router.post("/member/MemberFav/delete", async (req, res) => {
   const output = {
     success: false,
     error: ""
@@ -188,8 +245,8 @@ router.post("/member/MemberFav-heart-delete", async (req, res) => {
                  AND \`pro_id\` = ?`;
   console.log(sql);
   const [result] = await db.query(sql, [
-    req.body.member_id,
-    req.body.pro_id
+    parseInt(req.body.member_id),
+    parseInt(req.body.pro_id)
   ]);
 
   console.log(result);
@@ -198,7 +255,7 @@ router.post("/member/MemberFav-heart-delete", async (req, res) => {
 
   res.json(output);
 });
-// 帶會員id修改收藏
+
 // 帶會員id拿取訂閱清單資料
 router.post("/member/MemberSublist", jwtVerify, async (req, res) => {
   const userAccount = res.locals.auth;
