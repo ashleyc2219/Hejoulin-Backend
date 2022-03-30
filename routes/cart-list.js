@@ -255,8 +255,8 @@ router.get("/mark", async (req, res) => {
     success: false,
     error: "",
   };
-  const member_id = req.body.member_id
-    ? parseInt(req.body.member_id)
+  const member_id = req.query.member_id
+    ? parseInt(req.query.member_id)
     : "no member_id";
   const sql = "SELECT * FROM `mark` WHERE member_id =?";
   const [result, fields] = await db.query(sql, [member_id]);
