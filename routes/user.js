@@ -211,11 +211,11 @@ router.put("/member/Change", jwtVerify, async (req, res) => {
   const memberName = req.body.member_name;
   const memberMob = req.body.member_mob;
   const memberId = res.locals.auth.member_id;
-  // const memberBir = req.body.member_bir;
-  const sql = "UPDATE member SET member_name=?, member_mob=? WHERE member_id = ?";
+  const memberBir = req.body.birY + '-' + req.body.birM + '-' + req.body.birD;
+  const sql = "UPDATE member SET member_name=?, member_mob=?, member_bir=? WHERE member_id = ?";
 
   try {
-    [result] = await db.query(sql, [memberName, memberMob, memberId]);
+    [result] = await db.query(sql, [memberName, memberMob, memberBir, memberId]);
     console.log(result);
     if (result.affectedRows === 1) {
       output.success = true;
