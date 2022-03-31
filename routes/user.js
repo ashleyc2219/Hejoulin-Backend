@@ -164,6 +164,7 @@ router.post("/pass/check", jwtVerify, async (req, res) => {
   }
 
 });
+
 // 會員中心更改密碼
 router.put("/member/passChange", jwtVerify, async (req, res) => {
   const output = {
@@ -230,6 +231,37 @@ router.put("/member/Change", jwtVerify, async (req, res) => {
   }
 
 
+
+  res.json(output);
+
+});
+
+// 會員中心更改以及新增地址
+router.put("/member/addressChange", jwtVerify, async (req, res) => {
+  const output = {
+    success: false,
+    postData: req.body,
+    error: ""
+  };
+
+  const memberAddr = req.body.member_city + req.body.member_zip + req.body.member_address;
+  const memberId = res.locals.auth.member_id;
+  const sql = "UPDATE member SET member_addr=?WHERE member_id = ?";
+
+  try {
+    [result] = await db.query(sql, [memberAddr, memberId]);
+    console.log(result);
+    if (result.affectedRows === 1) {
+      output.success = true;
+
+    } else {
+      output.error = "更新會員地址失敗";
+    }
+  } catch (ex) {
+    console.log(ex);
+    output.error = "建議您檢查是否輸入新資料";
+
+  }
 
   res.json(output);
 
