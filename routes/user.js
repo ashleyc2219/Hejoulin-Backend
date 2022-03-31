@@ -147,15 +147,20 @@ router.put("/member/forgetPassChange", upload.none(), async (req, res) => {
 });
 
 // 會員中心檢查舊密碼是否正確
-router.post("/pass-check", async (req, res) => {
+router.post("/pass/check", jwtVerify, async (req, res) => {
 
-  const sql = "SELECT `user_pass` FROM user WHERE `user_pass`=?";
-  const hash = await bcrypt.hash(req.body.user_pass, 10);
-  const [rs] = await db.query(sql, [hash || "aa"]);
-  if (rs.length) {
+  const userAccount = res.locals.auth.user_account;
+  const sql = "SELECT `user_pass` FROM user WHERE `user_account`=?";
+  const [rs] = await db.query(sql, [userAccount || "aa"]);
+  const userOldPass = req.body.user_passOld;
+  console.log(userOldPass);
+  const needVerify = rs[0].user_pass;
+  const compareBcrypt = await bcrypt.compare(userOldPass, needVerify);
+  console.log(compareBcrypt);
+  if (compareBcrypt) {
     res.json({ used: "have" });
   } else {
-    res.json({ used: "noAccount" });
+    res.json({ used: "舊密碼輸入錯誤" });
   }
 
 });
@@ -166,18 +171,11 @@ router.put("/member/passChange", jwtVerify, async (req, res) => {
     postData: req.body,
     error: ""
   };
-  console.log(req.body);
+
   const userPass = req.body.user_pass;
-  // console.log(res.locals.auth);
   const userAccount = res.locals.auth.user_account;
-  // console.log(userPass);
-  // console.log(userAccount);
-  // if (req.body && userPass) {
-  //   // user_pass = ` , user_pass='${req.body.user_pass}'`;
-  // }
 
   const hash = await bcrypt.hash(userPass, 10);
-  console.log(hash);
 
   const sql = `UPDATE user
                SET user_pass=?
@@ -197,6 +195,41 @@ router.put("/member/passChange", jwtVerify, async (req, res) => {
     output.error = "建議您檢查是否輸入新密碼";
 
   }
+
+  res.json(output);
+
+});
+
+// 會員中心更改會員資料
+router.put("/member/Change", jwtVerify, async (req, res) => {
+  const output = {
+    success: false,
+    postData: req.body,
+    error: ""
+  };
+
+  const memberName = req.body.member_name;
+  const memberMob = req.body.member_mob;
+  const memberId = res.locals.auth.member_id;
+  // const memberBir = req.body.member_bir;
+  const sql = "UPDATE member SET member_name=?, member_mob=? WHERE member_id = ?";
+
+  try {
+    [result] = await db.query(sql, [memberName, memberMob, memberId]);
+    console.log(result);
+    if (result.affectedRows === 1) {
+      output.success = true;
+
+    } else {
+      output.error = "更新個人資料失敗";
+    }
+  } catch (ex) {
+    console.log(ex);
+    output.error = "建議您檢查是否輸入新資料";
+
+  }
+
+
 
   res.json(output);
 
