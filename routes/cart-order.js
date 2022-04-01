@@ -55,7 +55,6 @@ router.post("/order-main", async (req, res) => {
   // member_id要去拿登入的member_id
   const sql =
     "INSERT INTO `order_main`(`order_id`, `member_id`, `order_name`, `order_mobile`, `order_email`, `type`, `used_code`, `order_date`) VALUES (?,?,?,?,?,?,?, NOW())";
-
   const [result] = await db.query(sql, [
     order_id,
     req.body.member_id,
@@ -68,7 +67,8 @@ router.post("/order-main", async (req, res) => {
   console.log(result);
   output.success = !!result.affectedRows;
   output.result = result;
-  res.json(output);
+  res.json([output, order_id]);
+
 });
 
 // 讀取 會還在購物車裡的商 清酒商品資料
