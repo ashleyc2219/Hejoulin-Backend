@@ -40,13 +40,11 @@ router.post('/payment', async(req, res)=>{
     }
     // TODO:
     // order_id要去跟order_main資料表新增的order_id一樣
-    const sql = "INSERT INTO `payment_detail`(`order_id`, `card_num`, `security_code`, `expire_date`) VALUES (?, ?, ?, ?)";
+    const sql = "INSERT INTO `payment_detail`(`order_id`, `card_num`) VALUES (?, ?)";
     // result 需用[]包起來，因為回傳值是array，可以參照array 接值 補充
     const [result] = await db.query(sql, [
         req.body.order_id,
         req.body.card_num,
-        req.body.security_code,
-        req.body.expire_date,
     ]);
     output.success = !! result.affectedRows;
     output.result = result;
