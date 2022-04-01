@@ -7,8 +7,8 @@ router.get("/", async (req, res) => {
   if (req.query.ans) {
     let taste = req.query.pro_taste ? req.query.pro_taste : "";
     let temp = req.query.pro_temp ? req.query.pro_temp : "";
-    let priceLow = req.query.pro_price ? req.query.pro_price : "";
-    let priceHigh = req.query.pro_price ? req.query.pro_price : "";
+    let priceLow = req.query.pro_price_low ? req.query.pro_price_low : "";
+    let priceHigh = req.query.pro_price_high ? req.query.pro_price_high : "";
     const gift = req.query.pro_gift ? req.query.pro_gift : "";
 
     let where = " WHERE 1";

@@ -28,24 +28,20 @@ router.post("/", async (req, res) => {
     req.body.box_color,
   ]);
   output.success = !!result1.affectedRows;
-  output.result = result1;
+  output.result1 = result1;
+  output.result2 = [];
 
-  const sql3 =
+
+for(let i of req.body.pro_id){
+  let pid = +i;
+  if(pid){
+    const sql3 =
     "INSERT INTO `cart_gift_d_d`(`cart_gift_id`,`pro_id`) VALUES (?,?)";
-  const [result2] = await db.query(sql3, [cart_id, req.body.pro_id01]);
-  output.success = !!result2.affectedRows;
-  output.result = result2;
-
-  if (!req.body.pro_id02) {
-    const sql4 =
-      "INSERT INTO `cart_gift_d_d`(`cart_gift_id`,`pro_id`) VALUES (?,?)";
-    const [result3] = await db.query(sql4, [cart_id, req.body.pro_id02]);
-    output.success = !!result3.affectedRows;
-    output.result = result3;
+    output.result2.push( await db.query(sql3, [cart_id, pid]) );
   }
+}
 
   console.log("output", output);
-  console.log("HHHHHHHHHEEEEEEELLLLOOOOOOO!");
   res.json(output);
 });
 
