@@ -5,7 +5,6 @@ const db = require("../modules/connect-db");
 // 先用專業指南的問題(不包含價錢)
 router.get("/", async (req, res) => {
   const sql = "SELECT * FROM guide_q gq WHERE gq.q_cate = 'a' ";
-  // const sql = "SELECT * FROM guide_q gq JOIN guide_a ga ON gq.q_id=ga.q_id WHERE gq.q_cate = 'a' ";
   const [rs, fields] = await db.query(sql);
   return res.json(rs);
 });
