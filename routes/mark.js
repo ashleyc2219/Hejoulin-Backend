@@ -2,6 +2,20 @@ const router = require("express").Router();
 const db = require("../modules/connect-db");
 const upload = require("./../modules/upload-images");
 
+// Get all mark : http://localhost:3001/api/mark
+// Get specific mark : http://localhost:3001/api/mark?markId=1
+router.get("/", async (req, res) => {
+  if (req.query.markId) {
+    const { markId } = req.query;
+    const sql = `SELECT * FROM mark WHERE mark_id = ${markId}`;
+    const [rs, fields] = await db.query(sql);
+    return res.json(rs);
+  }
+  const sql = "SELECT * FROM mark";
+  const [rs, fields] = await db.query(sql);
+  res.json(rs);
+});
+
 // Get mark:http://localhost:3500/api/mark
 // 寫入酒標
 router.post("/", upload.single("mark"), async (req, res) => {
