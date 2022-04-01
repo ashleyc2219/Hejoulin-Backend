@@ -164,11 +164,11 @@ router.get("/gift", async (req, res) => {
         twoInOne.box_color = i.box_color;
 
         twoInOne.pro_one = {
-          pro_id: i.pro_id ,
-          pro_name: i.pro_name ,
-          pro_img: i.pro_img ,
-          pro_price: i.pro_price ,
-          pro_capacity: i.pro_capacity ,
+          pro_id: i.pro_id,
+          pro_name: i.pro_name,
+          pro_img: i.pro_img,
+          pro_price: i.pro_price,
+          pro_capacity: i.pro_capacity,
         };
       } else {
         twoInOne.pro_two = {
@@ -178,7 +178,7 @@ router.get("/gift", async (req, res) => {
           pro_price: i.pro_price,
           pro_capacity: i.pro_capacity,
         };
-        tidyResult = [...tidyResult, {...twoInOne}];
+        tidyResult = [...tidyResult, { ...twoInOne }];
       }
     } else {
       tidyResult = [...tidyResult, i];
@@ -258,8 +258,8 @@ router.get("/mark", async (req, res) => {
   const member_id = req.query.member_id
     ? parseInt(req.query.member_id)
     : "no member_id";
-  const sql = "SELECT * FROM `mark` WHERE member_id =?"; 
-  const [result, fields] = await db.query(sql, [member_id]); 
+  const sql = "SELECT * FROM `mark` WHERE member_id =?";
+  const [result, fields] = await db.query(sql, [member_id]);
 
   output.success = !!result.affectedRows;
   output.result = result;
@@ -269,9 +269,24 @@ router.get("/mark", async (req, res) => {
 /* 折扣碼 ---*/
 router.post("/discount", async (req, res) => {
   const discountCode = req.body.discountCode ? req.body.discountCode : "";
-  const sql = `SELECT * FROM discount WHERE discount_code=?;`;
+  const sql = `SELECT discount_info, perscent FROM discount WHERE discount_code=?;`;
   const [result, fields] = await db.query(sql, [req.body.discountCode]);
-  res.json(result);
+  let tidyResult = [];
+  if (result.length) {
+    let perscentString = result[0].perscent;
+    perscentString = perscentString.toString();
+    if (perscentString.length === 3) {
+      result[0]["perscentString"] = perscentString.slice(2);
+      console.log(perscentString.slice(2));
+    } else if (perscentString.length === 4) {
+      result[0]["perscentString"] = perscentString.slice(2, 4);
+      console.log(perscentString.slice(2, 4));
+    }
+    tidyResult = result;
+  } else {
+    tidyResult = [];
+  }
+  return res.json(tidyResult);
 });
 
 module.exports = router;
