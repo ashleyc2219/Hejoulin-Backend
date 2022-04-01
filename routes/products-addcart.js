@@ -30,7 +30,7 @@ router.post("/", async (req, res) => {
 
   output.success = !!result2.affectedRows; //rowcount主為布林職
   output.result = result2;
-  res.json(output);
+  //res.json(output);
 
   if (output.result.length > 0) {
     const quantity =
@@ -55,8 +55,9 @@ router.post("/", async (req, res) => {
 
     output.success = !!result.affectedRows; //rowcount主為布林職
     output.result = result;
+    console.log(output.success);
   }
-  return;
+  //return;
 
   res.json(output);
 });

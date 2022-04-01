@@ -12,8 +12,16 @@ router.post("/", async (req, res) => {
     "SELECT SUM(`cart_quantity`) FROM `cart_gift` WHERE `member_id` = ?";
   const [rs2, fields2] = await db.query(sql2, [req.body.member_id]);
 
-  const sake = parseInt(rs[0]["SUM(`cart_quantity`)"]);
-  const gift = parseInt(rs2[0]["SUM(`cart_quantity`)"]);
+  let sake = parseInt(rs[0]["SUM(`cart_quantity`)"]);
+  let gift = parseInt(rs2[0]["SUM(`cart_quantity`)"]);
+
+  if (isNaN(sake)) {
+    sake = 0;
+  }
+  if (isNaN(gift)) {
+    gift = 0;
+  }
+
   const quantity = sake + gift;
 
   console.log(quantity);
