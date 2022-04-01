@@ -7,11 +7,11 @@ const db = require("../modules/connect-db");
 router.get("/", async (req, res) => {
   if (req.query.gift) {
     const { gift } = req.query;
-    const sql = `SELECT * FROM product_sake ps JOIN  product_format pf ON pf.format_id = ps.format_id WHERE pf.pro_gift = ${gift}`;
+    const sql = `SELECT * FROM product_sake ps JOIN  product_format pf ON pf.format_id = ps.format_id JOIN product_container pc ON pc.container_id = pf.container_id WHERE pf.pro_gift = ${gift}`;
     const [rs, fields] = await db.query(sql);
     return res.json(rs);
   }
-  const sql = `SELECT * FROM product_sake ps JOIN  product_format pf ON pf.format_id = ps.format_id WHERE pf.pro_gift >0`;
+  const sql = `SELECT * FROM product_sake ps JOIN  product_format pf ON pf.format_id = ps.format_id JOIN product_container pc ON pc.container_id = pf.container_id WHERE pf.pro_gift >0`;
   const [rs, fields] = await db.query(sql);
   return res.json(rs);
 });
