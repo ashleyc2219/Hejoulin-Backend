@@ -76,6 +76,7 @@ async function getListData(req, res) {
 router.get("/api/list", async (req, res) => {
   res.json(await getListData(req, res));
 });
+
 // 登入後拿到帳號
 router.get("/api/auth-list", async (req, res) => {
   if (res.locals.auth && res.locals.auth.user_account) {
@@ -91,17 +92,9 @@ router.get("/api/auth-list", async (req, res) => {
 
 // 帶會員id拿到單筆會員資料
 router.post("/member", jwtVerify, async (req, res) => {
-  const userAccount = res.locals.auth;
-  const [rs] = await db.query(`SELECT \`member_id\`,
-                                      \`user_account\`,
-                                      \`user_pass\`,
-                                      \`member_name\`,
-                                      \`member_bir\`,
-                                      \`member_mob\`,
-                                      \`member_addr\`
-                               FROM \`user\`
-                                        INNER JOIN \`member\` ON \`user\`.\`user_id\` = \`member\`.\`user_id\`
-                               WHERE member_id = ${userAccount["member_id"]} `);
+  const userMember = res.locals.auth.member_id;
+  const sql = 'SELECT \`member_id\`,\`user_account\`,\`user_pass\`,\`member_name\`,\`member_bir\`,\`member_mob\`,\`member_addr\`FROM \`user\` INNER JOIN \`member\` ON \`user\`.\`user_id\` = \`member\`.\`user_id\` WHERE member_id =? '
+  const [rs] = await db.query(sql, [userMember]);
   res.json(rs);
 });
 
