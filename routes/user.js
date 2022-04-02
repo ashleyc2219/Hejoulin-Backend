@@ -92,9 +92,9 @@ router.get("/api/auth-list", async (req, res) => {
 
 // 帶會員id拿到單筆會員資料
 router.post("/member", jwtVerify, async (req, res) => {
-  const userMember = res.locals.auth.member_id;
+  const uData = res.locals.auth;
   const sql = 'SELECT \`member_id\`,\`user_account\`,\`user_pass\`,\`member_name\`,\`member_bir\`,\`member_mob\`,\`member_addr\`FROM \`user\` INNER JOIN \`member\` ON \`user\`.\`user_id\` = \`member\`.\`user_id\` WHERE member_id =? '
-  const [rs] = await db.query(sql, [userMember]);
+  const [rs] = await db.query(sql, [uData["member_id"]]);
   res.json(rs);
 });
 
@@ -222,8 +222,6 @@ router.put("/member/Change", jwtVerify, async (req, res) => {
     output.error = "建議您檢查是否輸入新資料";
 
   }
-
-
 
   res.json(output);
 
@@ -409,7 +407,6 @@ router.route("/edit/:user_id")
     }
   })
   .post(async (req, res) => {
-    // TODO: 欄位檢查
     const output = {
       success: false,
       postData: req.body

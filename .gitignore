@@ -2,3 +2,6 @@ node_modules
 package-lock.json
 random.js
 .vscode
+.env
+header.txt
+yarn.lock
