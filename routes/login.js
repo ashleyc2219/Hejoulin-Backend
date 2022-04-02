@@ -3,7 +3,6 @@ const bcrypt = require("bcryptjs");
 const db = require("../modules/connect-db");
 const upload = require("./../modules/upload-images");
 const jwt = require("jsonwebtoken");
-const nodemailer = require("nodemailer");
 const { jwtVerify } = require("../modules/jwtVerify");
 
 const router = express.Router();
@@ -112,8 +111,6 @@ function getVerifyCode(e) {
 // 寄email從打過來的郵件位址
 router.post("/send-email", upload.none(), async (req, res) => {
   let uId = req.body.userId;
-  console.log(req.body);
-  console.log(uId);
   const createVCode = "INSERT INTO `verify`(`verify_code`,`user_id`) VALUES (?, ?)";
   const [insertVCode] = await db.query(createVCode, [getVerifyCode(6), uId]);
 
