@@ -93,6 +93,7 @@ router.get("/api/auth-list", async (req, res) => {
 // 帶會員id拿到單筆會員資料
 router.post("/member", jwtVerify, async (req, res) => {
   const uData = res.locals.auth;
+  console.log(uData);
   const sql = 'SELECT \`member_id\`,\`user_account\`,\`user_pass\`,\`member_name\`,\`member_bir\`,\`member_mob\`,\`member_addr\`FROM \`user\` INNER JOIN \`member\` ON \`user\`.\`user_id\` = \`member\`.\`user_id\` WHERE member_id =? '
   const [rs] = await db.query(sql, [uData["member_id"]]);
   res.json(rs);

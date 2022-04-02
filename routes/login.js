@@ -35,7 +35,7 @@ router.post("/login", upload.none(), async (req, res) => {
   output.success = true;
   output.info = { user_account };
 
-  output.token = jwt.sign({ user_account }, process.env.JWT_KEY);
+  output.token = jwt.sign({ userAccount }, process.env.JWT_KEY);
 
   res.json(output);
 });
@@ -87,17 +87,25 @@ router.post("/register", upload.none(), async (req, res) => {
 });
 
 // 確認打過來的帳號是否存在
-router.post("/account-check", async (req, res) => {
-
-  const sql = "SELECT `user_account` FROM user WHERE `user_account`=?";
-  const [rs] = await db.query(sql, [req.body.user_account || "aa"]);
+router.post("/account-check", upload.none(), async (req, res) => {
+  const output = {
+    used: "",
+    uId: "",
+    token: "",
+  };
+  const userAccount = req.body.user_account;
+  console.log(userAccount);
+  const sql = "SELECT `user_account`, `user_id` FROM user WHERE `user_account`=?";
+  const [rs] = await db.query(sql, [userAccount || "aa"]);
   if (rs.length) {
-    res.json({ used: "have" });
+    output.used = "have";
+    output.uId = rs[0].user_id;
+    output.token = jwt.sign({ userAccount }, process.env.JWT_KEY);
   } else {
-    res.json({ used: "noAccount" });
+    output.used = "noAccount";
   }
 
-
+  res.json(output);
 });
 
 // 產生六位數驗證碼
