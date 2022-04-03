@@ -111,7 +111,7 @@ router.post("/account-check", upload.none(), async (req, res) => {
 // 產生六位數驗證碼
 function getVerifyCode(e) {
   e = e || 6;
-  let t = "123456789", a = t.length, n = "";
+  let t = "0123456789", a = t.length, n = "";
   for (let i = 0; i < e; i++) n += t.charAt(Math.floor(Math.random() * a));
   return n;
 }
@@ -234,7 +234,14 @@ router.post("/code/verify", jwtVerify, async (req, res) => {
   const [rs] = await db.query(sql, [uData["user_id"]]);
   const enterCode = req.body.verifyCodeFirst + req.body.verifyCodeLast;
   if (rs[0].verify_code === enterCode) {
+    const clearVCode = "DELETE FROM `verify` WHERE `user_id`=?"
+    const [verifyCodeCycle] = await db.execute(clearVCode, [uData["user_id"]])
+    console.log(verifyCodeCycle);
+    if (verifyCodeCycle.affectedRows === 1) {
     res.status(200).send({ message: "success" });
+    }
+  } else {
+    res.status(200).send({message:"codeError"});
   }
 
 });
