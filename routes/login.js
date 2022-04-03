@@ -31,9 +31,9 @@ router.post("/login", upload.none(), async (req, res) => {
     output.code = 402;
     return res.json(output);
   }
-  const { user_account } = row;
+  const { userAccount } = row;
   output.success = true;
-  output.info = { user_account };
+  output.info = { userAccount };
 
   output.token = jwt.sign({ userAccount }, process.env.JWT_KEY);
 
