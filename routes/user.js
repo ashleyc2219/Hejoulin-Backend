@@ -7,20 +7,11 @@ const { jwtVerify } = require("../modules/jwtVerify");
 
 const router = express.Router();
 
-async function getListData(req, res) {
-  const perPage = 5;//一頁幾筆
+async function getPage(req,res) {
+  const perPage = 6;//一頁幾筆
   //用戶要看第幾頁
   let page = req.query.page ? parseInt(req.query.page) : 1;
-  if (page < 1) {
-    return res.redirect("/user/list");
-  }//頁數合理規則
-  const conditions = {}; //傳到 ejs 的條件
-  let search = req.query.search ? req.query.search.trim() : "";//trim去掉頭尾空白
   let sqlWhere = " WHERE 1 ";
-  if (search) {
-    sqlWhere += ` AND \`user_id\` LIKE ${db.escape("%" + search + "%")} `;
-    conditions.search = search;
-  }
   //輸出
   const
     output = {
@@ -30,7 +21,6 @@ async function getListData(req, res) {
       totalRows: 0,
       totalPages: 0,
       rows: [],
-      conditions
     };
 
   const t_sql = `SELECT COUNT(1) num
@@ -41,10 +31,6 @@ async function getListData(req, res) {
   if (totalRows) {
     output.totalPages = Math.ceil(totalRows / perPage);
     output.totalRows = totalRows;
-    if (page > output.totalPages) {
-      //到最後一頁
-      return res.redirect(`/user/list?page=${output.totalPages}`);
-    }
 
     const sql = `SELECT \`member_id\`,
                         \`user_account\`,
@@ -73,22 +59,6 @@ async function getListData(req, res) {
   return output;
 }
 
-router.get("/api/list", async (req, res) => {
-  res.json(await getListData(req, res));
-});
-
-// 登入後拿到帳號
-router.get("/api/auth-list", jwtVerify ,async (req, res) => {
-  if (res.locals.auth && res.locals.auth.user_account) {
-    return res.json({
-      ...await getListData(req, res),
-      user_account: res.locals.auth.user_account,
-      member_id: res.locals.auth.member_id
-    }); // 正常送出資料
-  } else {
-    res.json({ success: false, error: "沒有授權" });
-  }
-});
 
 // 帶會員id拿到單筆會員資料
 router.post("/member", jwtVerify, async (req, res) => {
@@ -344,13 +314,49 @@ router.post("/member/MemberSublist", jwtVerify, async (req, res) => {
 router.post("/member/MemberOrderList", jwtVerify, async (req, res) => {
   const memberId = res.locals.auth[0].member_id;
   const fm = ("YYYY-MM-DD");
-  const sql = `SELECT \`order_state\`, \`order_d_price\`, \`order_date\`, \`member_id\`, \`order_main\`.\`order_id\`
+  const perPage = 6;//一頁幾筆
+  //用戶要看第幾頁
+  let page = req.body.page ? parseInt(req.body.page) : 1;
+  //輸出
+  const
+    output = {
+      //success: false,
+      perPage,
+      page,
+      totalRows: 0,
+      totalPages: 0,
+      rows: [],
+      rs2: '',
+      rs3: '',
+    };
+
+  const t_sql = `SELECT COUNT(1) num
+                 FROM \`order_main\`
+                        INNER JOIN \`order_sake_d\` ON \`order_sake_d\`.\`order_id\` = \`order_main\`.\`order_id\`
+               WHERE \`member_id\` = ?`;
+  const [rs1] = await db.query(t_sql, [memberId]);
+  const totalRows = rs1[0].num;
+  //let totalPages = 0;
+  if (totalRows) {
+    output.totalPages = Math.ceil(totalRows / perPage);
+    output.totalRows = totalRows;
+
+    const sql = `SELECT \`order_state\`, \`order_d_price\`, \`order_date\`, \`member_id\`, \`order_main\`.\`order_id\`
+               FROM \`order_main\`
+                        INNER JOIN \`order_sake_d\` ON \`order_sake_d\`.\`order_id\` = \`order_main\`.\`order_id\`
+               WHERE \`member_id\` = ? ORDER BY \`order_id\` DESC LIMIT ${perPage * (page - 1)}, ${perPage}`;
+    const [rs2] = await db.query(sql ,[memberId]);
+
+    output.rows = rs2.map((v) => ({ ...v, order_date: moment(v.order_date).format(fm) }))
+    ;
+  }
+  const sql2 = `SELECT \`order_state\`, \`order_d_price\`, \`order_date\`, \`member_id\`, \`order_main\`.\`order_id\`
                FROM \`order_main\`
                         INNER JOIN \`order_sake_d\` ON \`order_sake_d\`.\`order_id\` = \`order_main\`.\`order_id\`
                WHERE \`member_id\` = ?`;
-  const [rs] = await db.query(sql , [memberId]);
-  const rs2 = rs.map((v) => ({ ...v, order_date: moment(v.order_date).format(fm) }));
-  res.json(rs2);
+  const [rs] = await db.query(sql2 , [memberId]);
+  output.rs3 = rs.map((v) => ({ ...v, order_date: moment(v.order_date).format(fm) }))
+  res.json(output);
 });
 
 // 帶會員id拿取活動記錄資料
@@ -379,8 +385,8 @@ router.post("/member/MemberEventList", jwtVerify, async (req, res) => {
 });
 
 // 修改會員資料
-router.route("/edit/:user_id")
-  .get(async (req, res) => {
+router.route("/edit")
+  .get(jwtVerify,async (req, res) => {
     const sql = `SELECT \`member_id\`,
                         \`user_account\`,
                         \`user_time\`,
@@ -399,7 +405,7 @@ router.route("/edit/:user_id")
       res.redirect("/user/list");
     }
   })
-  .post(async (req, res) => {
+  .post(jwtVerify,async (req, res) => {
     const output = {
       success: false,
       postData: req.body

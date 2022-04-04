@@ -54,6 +54,7 @@ router.post("/register", upload.none(), async (req, res) => {
 
   const hash = await bcrypt.hash(req.body.user_pass, 10);
   const userAccount = req.body.user_account;
+  console.log(userAccount);
   const sql = "INSERT INTO `user`(`user_account`, `user_pass`, `user_time`) " +
     "VALUES ( ?, ?,NOW());";
   const getIdSql = "SELECT `user_id` FROM `user` WHERE `user_account`=?";
@@ -127,7 +128,7 @@ router.post("/send-email", upload.none(), async (req, res) => {
     const sql = "SELECT `verify_code` FROM verify WHERE user_id=?";
     const [rs] = await db.query(sql, [uId]);
     const verifyCode = rs[0].verify_code;
-    const to = req.body.user_account;
+    const to = req.body.userAccount;
     // 引用 nodemailer
     const nodemailer = require("nodemailer");
 
