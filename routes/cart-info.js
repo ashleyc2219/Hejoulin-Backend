@@ -53,7 +53,7 @@ router.post('/payment', async(req, res)=>{
 
 /*讀取 會員資訊  ---*/
 router.get('/member', async(req, res)=>{
-    const member_id = req.body.member_id ? parseInt(req.body.member_id) : 'no member_id'
+    const member_id = req.query.member_id ? parseInt(req.query.member_id) : 'no member_id'
     const sql = "SELECT member.*, user.user_account FROM `member` LEFT JOIN user ON member.user_id = user.user_id WHERE member_id =?;"
 
     const [result, fields] =  await db.query(sql, [member_id])
