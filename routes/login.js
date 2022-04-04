@@ -119,8 +119,8 @@ function getVerifyCode(e) {
 
 // 寄email從打過來的郵件位址
 router.post("/send-email", upload.none(), async (req, res) => {
-  let uId = req.body.userData.userId;
-  console.log(req.body.userData.user_account);
+  let uId = req.body.userId;
+  console.log(req.body.userAccount);
   const createVCode = "INSERT INTO `verify`(`verify_code`,`user_id`) VALUES (?, ?)";
   const [insertVCode] = await db.query(createVCode, [getVerifyCode(6), uId]);
 
