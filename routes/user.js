@@ -315,7 +315,7 @@ router.post("/member/MemberOrderList", jwtVerify, async (req, res) => {
   const memberId = res.locals.auth[0].member_id;
   const perPage = 6;//一頁幾筆
   //用戶要看第幾頁
-  let page = req.query.page ? parseInt(req.query.page) : 1;
+  let page = req.body.page ? parseInt(req.body.page) : 1;
   //輸出
   const
     output = {
@@ -343,30 +343,18 @@ router.post("/member/MemberOrderList", jwtVerify, async (req, res) => {
     const sql = `SELECT \`order_state\`, \`order_d_price\`, \`order_date\`, \`member_id\`, \`order_main\`.\`order_id\`
                FROM \`order_main\`
                         INNER JOIN \`order_sake_d\` ON \`order_sake_d\`.\`order_id\` = \`order_main\`.\`order_id\`
-               WHERE \`member_id\` = ? DESC LIMIT ${perPage * (page - 1)}, ${perPage}`;
+               WHERE \`member_id\` = ? ORDER BY \`order_id\` DESC LIMIT ${perPage * (page - 1)}, ${perPage}`;
     const [rs2] = await db.query(sql ,[memberId]);
-    //拿到資料在這邊先做格式轉換
-    rs2.forEach(el => {
-      let str = res.locals.toDateString(el.member_bir);
-      if (str === "Invalid date") {
-        el.member_bir = "沒有輸入資料";
-      } else {
-        el.member_bir = str;
-      }
-    });
-    rs2.forEach(el => el.member_bir = res.locals.toDateString(el.member_bir));
     output.rows = rs2;
   }
 
-
   const fm = ("YYYY-MM-DD");
-  const sql = `SELECT \`order_state\`, \`order_d_price\`, \`order_date\`, \`member_id\`, \`order_main\`.\`order_id\`
+  const sql2 = `SELECT \`order_state\`, \`order_d_price\`, \`order_date\`, \`member_id\`, \`order_main\`.\`order_id\`
                FROM \`order_main\`
                         INNER JOIN \`order_sake_d\` ON \`order_sake_d\`.\`order_id\` = \`order_main\`.\`order_id\`
                WHERE \`member_id\` = ?`;
-  const [rs] = await db.query(sql , [memberId]);
-  const rs3 = rs.map((v) => ({ ...v, order_date: moment(v.order_date).format(fm) }));
-  output.rs3 = rs3
+  const [rs] = await db.query(sql2 , [memberId]);
+  output.rs3 = rs.map((v) => ({ ...v, order_date: moment(v.order_date).format(fm) }))
   res.json(output);
 });
 
