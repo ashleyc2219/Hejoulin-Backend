@@ -23,6 +23,7 @@ router.get("/sake", async (req, res) => {
     LEFT JOIN product_format pf 
     ON cs.pro_id=pf.format_id 
     WHERE cs.member_id=${member_id}
+    ORDER BY cart_sake_id
     `;
   const [result, fields] = await db.query(sql);
   res.json(result);
@@ -121,11 +122,27 @@ router.put("/mark", async (req, res) => {
   res.json(output);
 });
 /* TODO: 新增 酒標購物車 酒標 --- */
+router.post('/mark', async(req, res)=>{
+   const output = {
+     success: false,
+     error: "",
+   };
+
+   const mark_id = req.body.mark_id ? req.body.mark_id : "0";
+   const cart_sake_id = req.body.cart_sake_id ? req.body.cart_sake_id : "0";
+
+   const sql =
+     "INSERT INTO `cart_mark`( `mark_id`, `cart_sake_id`) VALUES (?,?)";
+   const [result] = await db.query(sql, [mark_id, cart_sake_id]);
+
+   output.success = !!result.affectedRows;
+   output.result = result;
+   res.json(output);
+})
 
 /* 禮盒 購物車 --- */
 // TODO:
 //  member_id要去拿登入的member_id
-/// TODO: 禮盒送去前端的資料 要做合併跟處理
 router.get("/gift", async (req, res) => {
   const member_id = req.query.member_id
     ? parseInt(req.query.member_id)
