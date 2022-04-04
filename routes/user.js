@@ -313,6 +313,7 @@ router.post("/member/MemberSublist", jwtVerify, async (req, res) => {
 // 帶會員id拿取訂單總覽資料
 router.post("/member/MemberOrderList", jwtVerify, async (req, res) => {
   const memberId = res.locals.auth[0].member_id;
+  const fm = ("YYYY-MM-DD");
   const perPage = 6;//一頁幾筆
   //用戶要看第幾頁
   let page = req.body.page ? parseInt(req.body.page) : 1;
@@ -345,10 +346,10 @@ router.post("/member/MemberOrderList", jwtVerify, async (req, res) => {
                         INNER JOIN \`order_sake_d\` ON \`order_sake_d\`.\`order_id\` = \`order_main\`.\`order_id\`
                WHERE \`member_id\` = ? ORDER BY \`order_id\` DESC LIMIT ${perPage * (page - 1)}, ${perPage}`;
     const [rs2] = await db.query(sql ,[memberId]);
-    output.rows = rs2;
-  }
 
-  const fm = ("YYYY-MM-DD");
+    output.rows = rs2.map((v) => ({ ...v, order_date: moment(v.order_date).format(fm) }))
+    ;
+  }
   const sql2 = `SELECT \`order_state\`, \`order_d_price\`, \`order_date\`, \`member_id\`, \`order_main\`.\`order_id\`
                FROM \`order_main\`
                         INNER JOIN \`order_sake_d\` ON \`order_sake_d\`.\`order_id\` = \`order_main\`.\`order_id\`
