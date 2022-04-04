@@ -119,7 +119,8 @@ function getVerifyCode(e) {
 
 // 寄email從打過來的郵件位址
 router.post("/send-email", upload.none(), async (req, res) => {
-  let uId = req.body.userId;
+  let uId = req.body.userData.userId;
+  console.log(req.body.userData.user_account);
   const createVCode = "INSERT INTO `verify`(`verify_code`,`user_id`) VALUES (?, ?)";
   const [insertVCode] = await db.query(createVCode, [getVerifyCode(6), uId]);
 
@@ -127,7 +128,7 @@ router.post("/send-email", upload.none(), async (req, res) => {
     const sql = "SELECT `verify_code` FROM verify WHERE user_id=?";
     const [rs] = await db.query(sql, [uId]);
     const verifyCode = rs[0].verify_code;
-    const to = req.body.user_account;
+    const to = req.body.userData.user_account;
     // 引用 nodemailer
     const nodemailer = require("nodemailer");
 
