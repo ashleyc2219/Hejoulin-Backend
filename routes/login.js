@@ -139,7 +139,7 @@ router.post("/send-email", upload.none(), async (req, res) => {
         user: "cweihao2956@gmail.com",
         pass: "a128440816"
       }
-    });
+    }); 
 
     const options = {
       // 寄件者
