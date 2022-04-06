@@ -4,6 +4,7 @@ const upload = require("./../modules/upload-images");
 const bcrypt = require("bcryptjs");
 const moment = require("moment-timezone");
 const { jwtVerify } = require("../modules/jwtVerify");
+const jwt = require("jsonwebtoken");
 
 const router = express.Router();
 
@@ -60,13 +61,33 @@ async function getPage(req,res) {
 }
 
 
+// 帶token進來 回傳member_id
+router.post('/memberId', async (req, res)=> {
+  const token = req.body.token;
+  jwt.verify(token, process.env.JWT_KEY, async (err, member) => {
+    if (err) {
+      res.sendStatus(403);
+    } else {
+      let memberInfo = await db.query(
+        `SELECT a1.user_id, a1.user_account, a2.member_id
+            FROM user AS a1, member AS a2
+             WHERE a1.user_id = a2.user_id AND a1.user_account = ?`,
+        [member.userAccount]
+      );
+      res.json(memberInfo[0]);
+    }
+  });
+})
+
 // 帶會員id拿到單筆會員資料
 router.post("/member", jwtVerify, async (req, res) => {
+
   const memberId = res.locals.auth[0].member_id;
   console.log();
   const sql = 'SELECT \`member_id\`,\`user_account\`,\`user_pass\`,\`member_name\`,\`member_bir\`,\`member_mob\`,\`member_addr\`FROM \`user\` INNER JOIN \`member\` ON \`user\`.\`user_id\` = \`member\`.\`user_id\` WHERE member_id =? '
   const [rs] = await db.query(sql, [memberId]);
   res.json(rs);
+
 });
 
 // 忘記密碼 - 改密碼
@@ -234,23 +255,34 @@ router.put("/member/addressChange", jwtVerify, async (req, res) => {
 
 // 帶會員id拿取酒標作品資料
 router.post("/member/MemberMark", jwtVerify, async (req, res) => {
+
   const memberId = res.locals.auth[0].member_id;
   console.log(memberId);
-  const sql = "SELECT `pics`, `mark_name` FROM `mark` WHERE `member_id` =?"
+  const sql = "SELECT `pics`, `mark_name`, `mark_id` FROM `mark` WHERE `member_id` =?"
   const [rs] = await db.query(sql, [memberId]);
   console.log(rs);
   res.json(rs);
+
 });
 
 // 帶會員id刪除酒標作品資料
-router.post("/member/MemberMarkDelete", jwtVerify, async (req, res) => {
+router.delete("/member/MemberMarkDelete", jwtVerify, async (req, res) => {
+
+  const output = {
+    success: false,
+  }
+
+  console.log(req.body.mark_id);
   const memberId = res.locals.auth[0].member_id;
-  const markName = req.body.mark_name;
-  console.log(memberId);
-  const sql = "DELETE FROM `mark` WHERE `member_id` =? AND `mark_name` =?"
-  const [rs] = await db.query(sql, [memberId, markName]);
+  const markId = req.body.mark_id;
+  const sql = "DELETE FROM `mark` WHERE `member_id` =? AND `mark_id` =?"
+  const [rs] = await db.query(sql, [memberId, markId]);
   console.log(rs);
-  res.json(rs);
+  if (rs.affectedRows  >= 1) {
+    output.success = true
+  }
+  res.json(output);
+
 });
 
 // 帶會員id拿取收藏商品資料
