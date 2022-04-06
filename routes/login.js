@@ -162,49 +162,48 @@ router.post("/send-email", upload.none(), async (req, res) => {
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
     <style>
-      * {
-        /* outline: 1px solid red; */
-      }
-      .mail-container {
-        width: 350px;
-        height: fit-content;
-        box-shadow: 0px 0px 15px #9d9d9d6e;
-        margin: auto;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        flex-direction: column;
-        padding: 40px;
-      }
-      img {
-        width: 200px;
-        margin-top: 10px;
-        filter: drop-shadow(0 2px 1px rgba(128, 128, 128, 0.509));
-      }
+    .mail-container {
+      max-width: 350px;
+      height: fit-content;
+      box-shadow: 0px 0px 15px #9d9d9d6e;
+      margin: auto;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      flex-direction: column;
+      padding: 40px;
+    }
+    img {
+      width: 100%;
+      margin-top: 10px;
+      filter: drop-shadow(0 2px 1px rgba(128, 128, 128, 0.509));
+    }
 
-      .info {
-        width: 100%;
-        margin-top: 30px;
-        font-size: 14px;
-        color: #6c6c6c;
-        text-align: center;
-        border-bottom: 1px solid rgba(128, 128, 128, 0.267);
-        padding-bottom: 15px;
-      }
+    .info {
+      width: 100%;
+      margin-top: 30px;
+      font-size: 14px;
+      color: #6c6c6c;
+      text-align: center;
+      border-bottom: 1px solid rgba(128, 128, 128, 0.267);
+      padding-bottom: 15px;
+    }
 
-      .verifycode {
-        margin-top: 20px;
-        font-size: 60px;
-        color: white;
-        background-color: #3D4349;
-        padding: 5px 20px;
-        border-radius: 5px;
-      }
+    .verifycode {
+      width: 100%;
+      text-align: center;
+      margin-top: 20px;
+      font-size: 40px;
+      color: white;
+      background-color: #3D4349;
+      padding: 5px 20px;
+      border-radius: 5px;
+    }
     </style>
   </head>
           <body>
     <div class="mail-container">
-      <img src="./sake大logo.png" alt="" />
+      <img src="https://i.imgur.com/kDJRSpK.png" alt="" />
       <div class="info">
         歡迎成為禾酒林會員，以下是您的驗證碼。<br />
         輸入完驗證碼即可完成註冊流程
