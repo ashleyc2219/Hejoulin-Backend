@@ -94,15 +94,16 @@ router.post("/account-check", upload.none(), async (req, res) => {
     used: "",
     uId: "",
     token: "",
+    userAccount: "",
   };
   const userAccount = req.body.user_account;
-  console.log(userAccount);
   const sql = "SELECT `user_account`, `user_id` FROM user WHERE `user_account`=?";
   const [rs] = await db.query(sql, [userAccount || "aa"]);
   if (rs.length) {
     output.used = "have";
     output.uId = rs[0].user_id;
     output.token = jwt.sign({ userAccount }, process.env.JWT_KEY);
+    output.userAccount = userAccount;
   } else {
     output.used = "noAccount";
   }
@@ -121,9 +122,11 @@ function getVerifyCode(e) {
 // 寄email從打過來的郵件位址
 router.post("/send-email", upload.none(), async (req, res) => {
   let uId = req.body.userId;
+  // 新增id進去產生驗證碼
   const createVCode = "INSERT INTO `verify`(`verify_code`,`user_id`) VALUES (?, ?)";
   const [insertVCode] = await db.query(createVCode, [getVerifyCode(6), uId]);
-
+  console.log(uId);
+  // 拿到驗證碼寄出
   if (insertVCode.affectedRows === 1) {
     const sql = "SELECT `verify_code` FROM verify WHERE user_id=?";
     const [rs] = await db.query(sql, [uId]);

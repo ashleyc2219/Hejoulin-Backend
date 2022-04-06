@@ -113,6 +113,7 @@ router.put("/member/forgetPassChange", upload.none(), async (req, res) => {
 // 會員中心檢查舊密碼是否正確
 router.post("/pass/check", jwtVerify, async (req, res) => {
 
+  console.log(req.body.user_passOld);
   const userAccount = res.locals.auth[0].user_account;
   const sql = "SELECT `user_pass` FROM user WHERE `user_account`=?";
   const [rs] = await db.query(sql, [userAccount || "aa"]);
@@ -137,6 +138,8 @@ router.put("/member/passChange", jwtVerify, async (req, res) => {
     error: ""
   };
 
+  console.log(res.locals.auth[0]);
+  console.log(req.body);
   const userPass = req.body.user_pass;
   const userAccount = res.locals.auth[0].user_account;
 
@@ -232,9 +235,21 @@ router.put("/member/addressChange", jwtVerify, async (req, res) => {
 // 帶會員id拿取酒標作品資料
 router.post("/member/MemberMark", jwtVerify, async (req, res) => {
   const memberId = res.locals.auth[0].member_id;
-  const [rs] = await db.query(`SELECT pics
-                               FROM mark
-                               WHERE member_id = ${memberId}`);
+  console.log(memberId);
+  const sql = "SELECT `pics`, `mark_name` FROM `mark` WHERE `member_id` =?"
+  const [rs] = await db.query(sql, [memberId]);
+  console.log(rs);
+  res.json(rs);
+});
+
+// 帶會員id刪除酒標作品資料
+router.post("/member/MemberMarkDelete", jwtVerify, async (req, res) => {
+  const memberId = res.locals.auth[0].member_id;
+  const markName = req.body.mark_name;
+  console.log(memberId);
+  const sql = "DELETE FROM `mark` WHERE `member_id` =? AND `mark_name` =?"
+  const [rs] = await db.query(sql, [memberId, markName]);
+  console.log(rs);
   res.json(rs);
 });
 
@@ -328,6 +343,7 @@ router.post("/member/MemberOrderList", jwtVerify, async (req, res) => {
       rows: [],
       rs2: '',
       rs3: '',
+      orderDetail: '',
     };
 
   const t_sql = `SELECT COUNT(1) num
@@ -341,20 +357,27 @@ router.post("/member/MemberOrderList", jwtVerify, async (req, res) => {
     output.totalPages = Math.ceil(totalRows / perPage);
     output.totalRows = totalRows;
 
-    const sql = `SELECT \`order_state\`, \`order_d_price\`, \`order_date\`, \`member_id\`, \`order_main\`.\`order_id\`
+    const sql = `SELECT \`order_state\`, \`order_d_price\`, \`order_date\`, \`member_id\`, \`order_main\`.\`order_id\`, \`order_sake_d\`.\`order_d_id\`
                FROM \`order_main\`
                         INNER JOIN \`order_sake_d\` ON \`order_sake_d\`.\`order_id\` = \`order_main\`.\`order_id\`
                WHERE \`member_id\` = ? ORDER BY \`order_id\` DESC LIMIT ${perPage * (page - 1)}, ${perPage}`;
     const [rs2] = await db.query(sql ,[memberId]);
 
-    output.rows = rs2.map((v) => ({ ...v, order_date: moment(v.order_date).format(fm) }))
-    ;
+    output.rows = rs2.map((v) => ({ ...v, order_date: moment(v.order_date).format(fm) }));
   }
-  const sql2 = `SELECT \`order_state\`, \`order_d_price\`, \`order_date\`, \`member_id\`, \`order_main\`.\`order_id\`
+  const sql2 = `SELECT \`order_state\`, \`order_d_price\`, \`order_date\`, \`member_id\`, \`order_main\`.\`order_id\`, \`order_sake_d\`.\`order_d_id\`
                FROM \`order_main\`
                         INNER JOIN \`order_sake_d\` ON \`order_sake_d\`.\`order_id\` = \`order_main\`.\`order_id\`
                WHERE \`member_id\` = ?`;
   const [rs] = await db.query(sql2 , [memberId]);
+
+  const sql3 = "SELECT `order_state`, `order_d_price`, `order_date`, `member_id`, `order_main`.`order_id`, `product_sake`.`pro_img`\n" +
+    "FROM `order_main`\n" +
+    "INNER JOIN `order_sake_d` ON `order_sake_d`.`order_id` = `order_main`.`order_id`\n" +
+    "INNER JOIN `product_sake` ON `order_sake_d`.`pro_id` = `product_sake`.`pro_id`\n" +
+    "WHERE `member_id` = ?"
+  output.orderDetail = await db.query(sql3, [memberId]);
+
   output.rs3 = rs.map((v) => ({ ...v, order_date: moment(v.order_date).format(fm) }))
   res.json(output);
 });
