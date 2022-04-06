@@ -309,7 +309,6 @@ router.post("/member/MemberFav/delete", async (req, res) => {
                FROM \`favorite\`
                WHERE \`member_id\` = ?
                  AND \`pro_id\` = ?`;
-  console.log(sql);
   const [result] = await db.query(sql, [
     parseInt(req.body.member_id),
     parseInt(req.body.pro_id)
@@ -357,7 +356,7 @@ router.post("/member/MemberSublist", jwtVerify, async (req, res) => {
   res.json(output);
 });
 
-// 帶會員id拿取訂單總覽資料
+// 帶會員id拿取訂單資料
 router.post("/member/MemberOrderList", jwtVerify, async (req, res) => {
   const memberId = res.locals.auth[0].member_id;
   const fm = ("YYYY-MM-DD");
@@ -373,8 +372,7 @@ router.post("/member/MemberOrderList", jwtVerify, async (req, res) => {
       totalRows: 0,
       totalPages: 0,
       rows: [],
-      rs2: '',
-      rs3: '',
+      rs: '',
       orderDetail: '',
     };
 
@@ -403,14 +401,17 @@ router.post("/member/MemberOrderList", jwtVerify, async (req, res) => {
                WHERE \`member_id\` = ?`;
   const [rs] = await db.query(sql2 , [memberId]);
 
-  const sql3 = "SELECT `order_state`, `order_d_price`, `order_date`, `member_id`, `order_main`.`order_id`, `product_sake`.`pro_img`\n" +
-    "FROM `order_main`\n" +
-    "INNER JOIN `order_sake_d` ON `order_sake_d`.`order_id` = `order_main`.`order_id`\n" +
-    "INNER JOIN `product_sake` ON `order_sake_d`.`pro_id` = `product_sake`.`pro_id`\n" +
-    "WHERE `member_id` = ?"
+  const sql3 = `SELECT \`order_state\`, \`used_code\`, \`order_name\`, \`order_email\`, \`order_mobile\`, \`order_d_price\`, \`order_date\`, \`member_id\`, \`order_main\`.\`order_id\`, \`product_sake\`.\`pro_img\`, \`product_sake\`.\`pro_name\`, \`product_format\`.\`pro_capacity\`, \`shipment_detail\`.\`shipment_method\`, \`shipment_detail\`.\`shipment_address\`, \`payment_detail\`.\`card_num\`
+  FROM \`order_main\`
+  INNER JOIN \`order_sake_d\` ON \`order_main\`.\`order_id\` = \`order_sake_d\`.\`order_id\`
+  INNER JOIN \`product_sake\` ON \`order_sake_d\`.\`pro_id\` = \`product_sake\`.\`pro_id\`
+  INNER JOIN \`product_format\` ON \`product_sake\`.\`format_id\` = \`product_format\`.\`format_id\`
+  INNER JOIN \`shipment_detail\` ON \`order_main\`.\`order_id\` = \`shipment_detail\`.\`order_id\`
+  INNER JOIN \`payment_detail\` ON \`order_main\`.\`order_id\` = \`payment_detail\`.\`order_id\`
+  WHERE \`member_id\` = ?`
   output.orderDetail = await db.query(sql3, [memberId]);
 
-  output.rs3 = rs.map((v) => ({ ...v, order_date: moment(v.order_date).format(fm) }))
+  output.rs = rs.map((v) => ({ ...v, order_date: moment(v.order_date).format(fm) }))
   res.json(output);
 });
 
