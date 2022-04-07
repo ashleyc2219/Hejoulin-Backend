@@ -359,6 +359,7 @@ router.post("/member/MemberSublist", jwtVerify, async (req, res) => {
 // 帶會員id拿取訂單資料
 router.post("/member/MemberOrderList", jwtVerify, async (req, res) => {
   const memberId = res.locals.auth[0].member_id;
+  // const state = res.body.order_state ? res.body.order_state : '';
   const fm = ("YYYY-MM-DD");
   const perPage = 6;//一頁幾筆
   //用戶要看第幾頁
@@ -373,7 +374,7 @@ router.post("/member/MemberOrderList", jwtVerify, async (req, res) => {
       totalPages: 0,
       rows: [],
       rs: '',
-      orderDetail: '',
+      tabData: '',
     };
 
   const t_sql = `SELECT COUNT(1) num
@@ -388,8 +389,8 @@ router.post("/member/MemberOrderList", jwtVerify, async (req, res) => {
     output.totalRows = totalRows;
 
     const sql = `SELECT \`order_state\`, \`used_code\`, \`order_name\`, \`order_email\`, \`order_mobile\`, \`order_d_price\`, \`order_date\`, \`member_id\`, \`order_main\`.\`order_id\`,\`order_sake_d\`.\`order_d_id\`, \`product_sake\`.\`pro_img\`, \`product_sake\`.\`pro_name\`, \`product_format\`.\`pro_capacity\`, \`shipment_detail\`.\`shipment_method\`, \`shipment_detail\`.\`shipment_address\`, \`payment_detail\`.\`card_num\`
-  FROM \`order_main\`
-  LEFT JOIN \`order_sake_d\` ON \`order_main\`.\`order_id\` = \`order_sake_d\`.\`order_id\`
+  FROM \`order_sake_d\`
+  LEFT JOIN \`order_main\` ON \`order_main\`.\`order_id\` = \`order_sake_d\`.\`order_id\`
   LEFT JOIN \`product_sake\` ON \`order_sake_d\`.\`pro_id\` = \`product_sake\`.\`pro_id\`
   LEFT JOIN \`product_format\` ON \`product_sake\`.\`format_id\` = \`product_format\`.\`format_id\`
   LEFT JOIN \`shipment_detail\` ON \`order_main\`.\`order_id\` = \`shipment_detail\`.\`order_id\`
@@ -413,11 +414,80 @@ router.post("/member/MemberOrderList", jwtVerify, async (req, res) => {
   INNER JOIN \`shipment_detail\` ON \`order_main\`.\`order_id\` = \`shipment_detail\`.\`order_id\`
   INNER JOIN \`payment_detail\` ON \`order_main\`.\`order_id\` = \`payment_detail\`.\`order_id\`
   WHERE \`member_id\` = ?`
-  output.orderDetail = await db.query(sql3, [memberId]);
+  output.tabData = await db.query(sql3, [memberId]);
 
   output.rs = rs.map((v) => ({ ...v, order_date: moment(v.order_date).format(fm) }))
   res.json(output);
 });
+// 待出貨
+router.post("/member/orderListTab1", jwtVerify, async (req, res)=> {
+
+  const memberId = res.locals.auth[0].member_id;
+  const fm = ("YYYY-MM-DD");
+  let sqlWhere = ""
+  const perPage = 6;//一頁幾筆
+  //用戶要看第幾頁
+  let page = req.body.page ? parseInt(req.body.page) : 1;
+  if (memberId) sqlWhere += ` AND  order_state = '待出貨'`
+  const sql = `SELECT \`order_state\`, \`used_code\`, \`order_name\`, \`order_email\`, \`order_mobile\`, \`order_d_price\`, \`order_date\`, \`member_id\`, \`order_main\`.\`order_id\`,\`order_sake_d\`.\`order_d_id\`, \`product_sake\`.\`pro_img\`, \`product_sake\`.\`pro_name\`, \`product_format\`.\`pro_capacity\`, \`shipment_detail\`.\`shipment_method\`, \`shipment_detail\`.\`shipment_address\`, \`payment_detail\`.\`card_num\`
+  FROM \`order_sake_d\`
+  LEFT JOIN \`order_main\` ON \`order_main\`.\`order_id\` = \`order_sake_d\`.\`order_id\`
+  LEFT JOIN \`product_sake\` ON \`order_sake_d\`.\`pro_id\` = \`product_sake\`.\`pro_id\`
+  LEFT JOIN \`product_format\` ON \`product_sake\`.\`format_id\` = \`product_format\`.\`format_id\`
+  LEFT JOIN \`shipment_detail\` ON \`order_main\`.\`order_id\` = \`shipment_detail\`.\`order_id\`
+  LEFT JOIN \`payment_detail\` ON \`order_main\`.\`order_id\` = \`payment_detail\`.\`order_id\`
+  WHERE \`member_id\` = ? ${sqlWhere} ORDER BY \`order_id\` DESC LIMIT ${perPage * (page - 1)}, ${perPage}`;
+  const [rs] = await db.query(sql ,[memberId]);
+  const cRs = rs.map((v) => ({ ...v, order_date: moment(v.order_date).format(fm) }))
+  res.json(cRs);
+
+})
+// 待收貨
+router.post("/member/orderListTab2", jwtVerify, async (req, res)=> {
+
+  const memberId = res.locals.auth[0].member_id;
+  const fm = ("YYYY-MM-DD");
+  let sqlWhere = ""
+  const perPage = 6;//一頁幾筆
+  //用戶要看第幾頁
+  let page = req.body.page ? parseInt(req.body.page) : 1;
+  if (memberId) sqlWhere += ` AND  order_state = '已出貨'`
+  const sql = `SELECT \`order_state\`, \`used_code\`, \`order_name\`, \`order_email\`, \`order_mobile\`, \`order_d_price\`, \`order_date\`, \`member_id\`, \`order_main\`.\`order_id\`,\`order_sake_d\`.\`order_d_id\`, \`product_sake\`.\`pro_img\`, \`product_sake\`.\`pro_name\`, \`product_format\`.\`pro_capacity\`, \`shipment_detail\`.\`shipment_method\`, \`shipment_detail\`.\`shipment_address\`, \`payment_detail\`.\`card_num\`
+  FROM \`order_sake_d\`
+  LEFT JOIN \`order_main\` ON \`order_main\`.\`order_id\` = \`order_sake_d\`.\`order_id\`
+  LEFT JOIN \`product_sake\` ON \`order_sake_d\`.\`pro_id\` = \`product_sake\`.\`pro_id\`
+  LEFT JOIN \`product_format\` ON \`product_sake\`.\`format_id\` = \`product_format\`.\`format_id\`
+  LEFT JOIN \`shipment_detail\` ON \`order_main\`.\`order_id\` = \`shipment_detail\`.\`order_id\`
+  LEFT JOIN \`payment_detail\` ON \`order_main\`.\`order_id\` = \`payment_detail\`.\`order_id\`
+  WHERE \`member_id\` = ? ${sqlWhere} ORDER BY \`order_id\` DESC LIMIT ${perPage * (page - 1)}, ${perPage}`;
+  const [rs] = await db.query(sql ,[memberId]);
+  const cRs = rs.map((v) => ({ ...v, order_date: moment(v.order_date).format(fm) }))
+  res.json(cRs);
+
+})
+// 已取消
+router.post("/member/orderListTab3", jwtVerify, async (req, res)=> {
+
+  const memberId = res.locals.auth[0].member_id;
+  const fm = ("YYYY-MM-DD");
+  let sqlWhere = ""
+  const perPage = 6;//一頁幾筆
+  //用戶要看第幾頁
+  let page = req.body.page ? parseInt(req.body.page) : 1;
+  if (memberId) sqlWhere += ` AND  order_state = '已取消'`
+  const sql = `SELECT \`order_state\`, \`used_code\`, \`order_name\`, \`order_email\`, \`order_mobile\`, \`order_d_price\`, \`order_date\`, \`member_id\`, \`order_main\`.\`order_id\`,\`order_sake_d\`.\`order_d_id\`, \`product_sake\`.\`pro_img\`, \`product_sake\`.\`pro_name\`, \`product_format\`.\`pro_capacity\`, \`shipment_detail\`.\`shipment_method\`, \`shipment_detail\`.\`shipment_address\`, \`payment_detail\`.\`card_num\`
+  FROM \`order_sake_d\`
+  LEFT JOIN \`order_main\` ON \`order_main\`.\`order_id\` = \`order_sake_d\`.\`order_id\`
+  LEFT JOIN \`product_sake\` ON \`order_sake_d\`.\`pro_id\` = \`product_sake\`.\`pro_id\`
+  LEFT JOIN \`product_format\` ON \`product_sake\`.\`format_id\` = \`product_format\`.\`format_id\`
+  LEFT JOIN \`shipment_detail\` ON \`order_main\`.\`order_id\` = \`shipment_detail\`.\`order_id\`
+  LEFT JOIN \`payment_detail\` ON \`order_main\`.\`order_id\` = \`payment_detail\`.\`order_id\`
+  WHERE \`member_id\` = ? ${sqlWhere} ORDER BY \`order_id\` DESC LIMIT ${perPage * (page - 1)}, ${perPage}`;
+  const [rs] = await db.query(sql ,[memberId]);
+  const cRs = rs.map((v) => ({ ...v, order_date: moment(v.order_date).format(fm) }))
+  res.json(cRs);
+
+})
 
 // 帶會員id拿取活動記錄資料
 router.post("/member/MemberEventList", jwtVerify, async (req, res) => {
