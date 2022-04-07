@@ -423,12 +423,12 @@ router.post("/member/MemberOrderList", jwtVerify, async (req, res) => {
 router.post("/member/MemberEventList", jwtVerify, async (req, res) => {
   const memberId = res.locals.auth[0].member_id;
   const fm = ("YYYY-MM-DD");
-  const sql = `SELECT \`order_d_id\`,\`order_name\`,\`order_mobile\`,\`order_email\`,\`order_state\`,\`event_location\`,\`event_name\`,\`event_time_start\`,\`order_event_d\`.\`order_id\`,\`order_d_price\`,\`order_date\`,\`member_id\`
-                FROM \`order_main\`
-                         INNER JOIN \`order_event_d\` ON \`order_main\`.\`order_id\` = \`order_event_d\`.\`order_id\`
-                         INNER JOIN \`event\` ON \`event\`.\`event_id\` = \`order_event_d\`.\`event_id\`
-                WHERE \`member_id\` = ${memberId}`;
-  const [rs] = await db.query(sql);
+  const sql = `SELECT \`order_d_id\`,\`order_event_d\`.\`order_name\`,\`order_event_d\`.\`order_mobile\`,\`order_event_d\`.\`order_email\`,\`order_state\`,\`order_event_d\`.\`order_id\`,\`order_d_price\`,\`order_date\`,\`member_id\`,\`event_location\`,\`event_name\`,\`event_time_start\`
+               FROM \`order_main\`
+               INNER JOIN \`order_event_d\` ON \`order_main\`.\`order_id\` = \`order_event_d\`.\`order_id\`
+               INNER JOIN \`event\` ON \`event\`.\`event_id\` = \`order_event_d\`.\`event_id\`
+               WHERE \`member_id\` = ?`;
+  const [rs] = await db.query(sql ,[memberId]);
   const rs2 = rs.map((v) => ({ ...v, event_time_start: moment(v.event_time_start).format(fm) }));
   res.json(rs2);
 });
@@ -494,4 +494,5 @@ router.route("/edit")
   });
 
 module.exports = router;
+
 
