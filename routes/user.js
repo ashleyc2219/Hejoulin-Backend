@@ -387,10 +387,14 @@ router.post("/member/MemberOrderList", jwtVerify, async (req, res) => {
     output.totalPages = Math.ceil(totalRows / perPage);
     output.totalRows = totalRows;
 
-    const sql = `SELECT \`order_state\`, \`order_d_price\`, \`order_date\`, \`member_id\`, \`order_main\`.\`order_id\`, \`order_sake_d\`.\`order_d_id\`
-               FROM \`order_main\`
-                        INNER JOIN \`order_sake_d\` ON \`order_sake_d\`.\`order_id\` = \`order_main\`.\`order_id\`
-               WHERE \`member_id\` = ? ORDER BY \`order_id\` DESC LIMIT ${perPage * (page - 1)}, ${perPage}`;
+    const sql = `SELECT \`order_state\`, \`used_code\`, \`order_name\`, \`order_email\`, \`order_mobile\`, \`order_d_price\`, \`order_date\`, \`member_id\`, \`order_main\`.\`order_id\`,\`order_sake_d\`.\`order_d_id\`, \`product_sake\`.\`pro_img\`, \`product_sake\`.\`pro_name\`, \`product_format\`.\`pro_capacity\`, \`shipment_detail\`.\`shipment_method\`, \`shipment_detail\`.\`shipment_address\`, \`payment_detail\`.\`card_num\`
+  FROM \`order_main\`
+  LEFT JOIN \`order_sake_d\` ON \`order_main\`.\`order_id\` = \`order_sake_d\`.\`order_id\`
+  LEFT JOIN \`product_sake\` ON \`order_sake_d\`.\`pro_id\` = \`product_sake\`.\`pro_id\`
+  LEFT JOIN \`product_format\` ON \`product_sake\`.\`format_id\` = \`product_format\`.\`format_id\`
+  LEFT JOIN \`shipment_detail\` ON \`order_main\`.\`order_id\` = \`shipment_detail\`.\`order_id\`
+  LEFT JOIN \`payment_detail\` ON \`order_main\`.\`order_id\` = \`payment_detail\`.\`order_id\`
+  WHERE \`member_id\` = ? ORDER BY \`order_id\` DESC LIMIT ${perPage * (page - 1)}, ${perPage}`;
     const [rs2] = await db.query(sql ,[memberId]);
 
     output.rows = rs2.map((v) => ({ ...v, order_date: moment(v.order_date).format(fm) }));
@@ -419,22 +423,11 @@ router.post("/member/MemberOrderList", jwtVerify, async (req, res) => {
 router.post("/member/MemberEventList", jwtVerify, async (req, res) => {
   const memberId = res.locals.auth[0].member_id;
   const fm = ("YYYY-MM-DD");
-  const sql = ` SELECT \`order_d_id\`,
-                       \`order_name\`,
-                       \`order_mobile\`,
-                       \`order_email\`,
-                       \`order_state\`,
-                       \`event_location\`,
-                       \`event_name\`,
-                       \`event_time_start\`,
-                       \`order_event_d\`.\`order_id\`,
-                       \`order_d_price\`,
-                       \`order_date\`,
-                       \`member_id\`
+  const sql = `SELECT \`order_d_id\`,\`order_name\`,\`order_mobile\`,\`order_email\`,\`order_state\`,\`event_location\`,\`event_name\`,\`event_time_start\`,\`order_event_d\`.\`order_id\`,\`order_d_price\`,\`order_date\`,\`member_id\`
                 FROM \`order_main\`
                          INNER JOIN \`order_event_d\` ON \`order_main\`.\`order_id\` = \`order_event_d\`.\`order_id\`
                          INNER JOIN \`event\` ON \`event\`.\`event_id\` = \`order_event_d\`.\`event_id\`
-                WHERE \`member_id\` = ${memberId} `;
+                WHERE \`member_id\` = ${memberId}`;
   const [rs] = await db.query(sql);
   const rs2 = rs.map((v) => ({ ...v, event_time_start: moment(v.event_time_start).format(fm) }));
   res.json(rs2);
