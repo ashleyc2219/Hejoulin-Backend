@@ -66,7 +66,7 @@ router.post('/memberId', async (req, res)=> {
   const token = req.body.token;
   jwt.verify(token, process.env.JWT_KEY, async (err, member) => {
     if (err) {
-      res.sendStatus(403);
+      res.send({message:"can not verify token"});
     } else {
       let memberInfo = await db.query(
         `SELECT a1.user_id, a1.user_account, a2.member_id
