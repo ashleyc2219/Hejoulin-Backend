@@ -18,7 +18,7 @@ router.post('/shipment', async(req, res)=>{
     const [result] = await db.query(sql, [
         req.body.order_id,
         req.body.shipment_method,
-        req.body.store_id ? req.body.store_id: '',
+        req.body.store_id ? req.body.store_id: 0,
         req.body.receiver,
         req.body.receiver_mobile,
         req.body.shipment_address,

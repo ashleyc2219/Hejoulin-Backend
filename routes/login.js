@@ -231,17 +231,17 @@ router.post("/send-email", upload.none(), async (req, res) => {
 });
 
 // 查驗驗證碼是否相符
-router.post("/code/verify", jwtVerify, async (req, res) => {
-
-  const uId = res.locals.auth[0].user_id;
+router.post("/code/verify", upload.none(), async (req, res) => {
+  const uId = req.body.pData.userId;
   const sql = "SELECT `verify_code` FROM verify WHERE user_id=?";
   const [rs] = await db.query(sql, [uId]);
-  const enterCode = req.body.verifyCodeFirst + req.body.verifyCodeLast;
+  const enterCode = req.body.vData.verifyCodeFirst + req.body.vData.verifyCodeLast;
+  console.log(enterCode);
   if (rs[0].verify_code === enterCode) {
     const clearVCode = "DELETE FROM `verify` WHERE `user_id`=?"
     const [verifyCodeCycle] = await db.execute(clearVCode, [uId])
     console.log(verifyCodeCycle);
-    if (verifyCodeCycle.affectedRows === 1) {
+    if (verifyCodeCycle.affectedRows >= 1) {
     res.status(200).send({ message: "success" });
     }
   } else {
