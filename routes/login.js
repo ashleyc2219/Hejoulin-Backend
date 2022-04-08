@@ -236,12 +236,12 @@ router.post("/code/verify/passForget", upload.none(), async (req, res) => {
   const sql = "SELECT `verify_code` FROM verify WHERE user_id=?";
   const [rs] = await db.query(sql, [uId]);
   const enterCode = req.body.vData.verifyCodeFirst + req.body.vData.verifyCodeLast;
-  console.log(rs);
-  console.log(enterCode);
+  // console.log(rs);
+  // console.log(enterCode);
   if (rs[0].verify_code === enterCode) {
     const clearVCode = "DELETE FROM `verify` WHERE `user_id`=?"
     const [verifyCodeCycle] = await db.execute(clearVCode, [uId])
-    console.log(verifyCodeCycle);
+    // console.log(verifyCodeCycle);
     if (verifyCodeCycle.affectedRows >= 1) {
     res.status(200).send({ message: "success" });
     }
@@ -252,16 +252,16 @@ router.post("/code/verify/passForget", upload.none(), async (req, res) => {
 });
 router.post("/code/verify/register", upload.none(), async (req, res) => {
   const uId = req.body.id.user_id;
-  console.log(uId);
+  // console.log(uId);
   const sql = "SELECT `verify_code` FROM verify WHERE user_id=?";
   const [rs] = await db.query(sql, [uId]);
   const enterCode = req.body.vData.verifyCodeFirst + req.body.vData.verifyCodeLast;
-  console.log(rs);
-  console.log(enterCode);
+  // console.log(rs);
+  // console.log(enterCode);
   if (rs[0].verify_code === enterCode) {
     const clearVCode = "DELETE FROM `verify` WHERE `user_id`=?"
     const [verifyCodeCycle] = await db.execute(clearVCode, [uId])
-    console.log(verifyCodeCycle);
+    // console.log(verifyCodeCycle);
     if (verifyCodeCycle.affectedRows >= 1) {
     res.status(200).send({ message: "success" });
     }

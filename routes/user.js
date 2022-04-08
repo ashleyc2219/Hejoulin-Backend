@@ -323,36 +323,165 @@ router.post("/member/MemberFav/delete", async (req, res) => {
 // 帶會員id拿取訂閱清單資料
 router.post("/member/MemberSublist", jwtVerify, async (req, res) => {
   const memberId = res.locals.auth[0].member_id;
-  const [rs] = await db.query(`SELECT order_main.\`member_id\`,
-                                      \`sub_time\`,
-                                      \`order_sub_d\`.\`order_state\`,
-                                      \`order_sub_d\`.\`subtime_id\`,
-                                      \`order_sub_d\`.\`order_d_id\`
-                               FROM \`order_sub_d\`
-                                        INNER JOIN \`order_main\`
-                                                   ON \`order_main\`.\`order_id\` = \`order_sub_d\`.\`order_id\`
-                                        INNER JOIN \`sub_time\`
-                                                   ON \`sub_time\`.\`subtime_id\` = \`order_sub_d\`.\`subtime_id\`
-                               WHERE \`order_main\`.\`member_id\` = ${memberId}`);
+  const fm = ("YYYY-MM-DD");
+  const sql1 = "SELECT \`order_main\`.\`member_id\`,\`order_main\`.\`order_date\`,\`sub_time\`,\`order_sub_d\`.\`order_state\`,\`order_sub_d\`.\`subtime_id\`,\`order_sub_d\`.\`order_d_id\`,\`order_sub_d\`.\`order_id\`" +
+    "FROM \`order_main\`" +
+    "INNER JOIN \`order_sub_d\` ON \`order_main\`.\`order_id\` = \`order_sub_d\`.\`order_id\` " +
+    "INNER JOIN \`sub_time\` ON \`sub_time\`.\`subtime_id\` = \`order_sub_d\`.\`subtime_id\`" +
+    "WHERE \`order_main\`.\`member_id\` = ?";
 
-  const [rs2] = await db.query(`SELECT \`sub_plan\`, \`sub_price\`, \`member_id\`
-                                FROM \`order_sub_d\`
-                                         INNER JOIN \`order_main\`
-                                                    ON \`order_main\`.\`order_id\` = \`order_sub_d\`.\`order_id\`
-                                         INNER JOIN \`sub_plan\` ON \`sub_plan\`.\`sub_id\` = \`order_sub_d\`.\`sub_id\`
-                                WHERE \`order_main\`.\`member_id\` = ${memberId}`);
-  const [rs3] = await db.query(`SELECT \`card_num\`, \`member_id\`
-                                FROM \`payment_detail\`
-                                         INNER JOIN \`order_main\`
-                                                    ON \`order_main\`.\`order_id\` = \`payment_detail\`.\`order_id\`
-                                WHERE \`member_id\` = ${memberId}`);
+  const [rs0] = await db.query(sql1, [memberId]);
+  const rs1 = rs0.map((v) => ({ ...v, order_date: moment(v.order_date).format(fm) }));
+  const sql2 = "SELECT \`order_sub_d\`.\`sub_id\`, \`order_sub_d\`.\`order_d_price\`, \`member_id\`" +
+    "FROM \`order_sub_d\`" +
+    "LEFT JOIN \`order_main\` ON \`order_main\`.\`order_id\` = \`order_sub_d\`.\`order_id\`" +
+    "LEFT JOIN \`sub_plan\` ON \`sub_plan\`.\`sub_id\` = \`order_sub_d\`.\`sub_id\`" +
+    "WHERE \`order_main\`.\`member_id\` = ?";
 
-  const output = {
-    data1: rs[0],
-    data2: rs2[0],
-    data3: rs3[0]
+  const [rs2] = await db.query(sql2, [memberId]);
+
+  const sql3 = "SELECT \`card_num\`, \`member_id\`" +
+    "FROM \`payment_detail\`" +
+    "LEFT JOIN \`order_main\` ON \`order_main\`.\`order_id\` = \`payment_detail\`.\`order_id\`" +
+    "WHERE \`member_id\` = ?";
+
+  const [rs3] = await db.query(sql3, [memberId]);
+
+  const sub_id_arr = JSON.parse(rs2[0].sub_id);
+  let new_data = [];
+  let info_data = {
+    order_id: rs1[0]["order_id"],
+    order_d_price: rs2[0]["order_d_price"],
+    card_num: rs3[0]["card_num"],
+    order_date: rs1[0]["order_date"],
+    order_state: rs1[0]["order_state"],
+    sub_time: rs1[0]["sub_time"],
+    sub_id: rs2[0]["sub_id"],
   };
-  res.json(output);
+
+  let plan_name = function (sub_id) {
+    if (sub_id === 1) {
+      return "純米";
+    }
+    if (sub_id === 2) {
+      return "純米吟釀";
+    }
+    if (sub_id === 3) {
+      return "純米大吟釀";
+    }
+  };
+  let plan_price = function (sub_id) {
+    if (sub_id === 1) {
+      return 1300;
+    }
+    if (sub_id === 2) {
+      return 1500;
+    }
+    if (sub_id === 3) {
+      return 1800;
+    }
+  };
+  sub_id_arr.forEach((sub_id) => {
+    const data_row = {
+      sub_id: sub_id,
+      plan_name: plan_name(sub_id),
+      plan_price: plan_price(sub_id),
+      order_id: rs1[0]["order_id"],
+      order_d_price: rs2[0]["order_d_price"],
+      card_num: rs3[0]["card_num"],
+      order_date: rs1[0]["order_date"],
+      order_state: rs1[0]["order_state"],
+      sub_time: rs1[0]["sub_time"],
+    };
+    new_data = [...new_data, data_row];
+  });
+  res.json([info_data, new_data]);
+});
+// 已過期
+router.post("/member/MemberSublist/over", jwtVerify, async (req, res) => {
+  const memberId = res.locals.auth[0].member_id;
+  let sqlWhere = "";
+  const fm = ("YYYY-MM-DD");
+  if (memberId) sqlWhere += ` AND \`order_sub_d\`.\`order_state\` = '已結束'`;
+  const sql1 = `SELECT \`order_main\`.\`member_id\`,\`order_main\`.\`order_date\`,\`sub_time\`,\`order_sub_d\`.\`order_state\`,\`order_sub_d\`.\`subtime_id\`,\`order_sub_d\`.\`order_d_id\`,\`order_sub_d\`.\`order_id\`
+    FROM \`order_sub_d\` 
+    INNER JOIN \`order_main\` ON \`order_main\`.\`order_id\` = \`order_sub_d\`.\`order_id\`  
+    INNER JOIN \`sub_time\` ON \`sub_time\`.\`subtime_id\` = \`order_sub_d\`.\`subtime_id\` 
+    WHERE \`order_main\`.\`member_id\` = ? ${sqlWhere}`;
+
+  const [rs0] = await db.query(sql1, [memberId]);
+  const rs1 = rs0.map((v) => ({ ...v, order_date: moment(v.order_date).format(fm) }));
+
+  const sql2 = "SELECT \`order_sub_d\`.\`sub_id\`, \`order_sub_d\`.\`order_d_price\`, \`member_id\`" +
+    "FROM \`order_sub_d\`" +
+    "LEFT JOIN \`order_main\` ON \`order_main\`.\`order_id\` = \`order_sub_d\`.\`order_id\`" +
+    "LEFT JOIN \`sub_plan\` ON \`sub_plan\`.\`sub_id\` = \`order_sub_d\`.\`sub_id\`" +
+    "WHERE \`order_main\`.\`member_id\` = ?";
+
+  const [rs2] = await db.query(sql2, [memberId]);
+
+  const sql3 = "SELECT \`card_num\`, \`member_id\`" +
+    "FROM \`payment_detail\`" +
+    "LEFT JOIN \`order_main\` ON \`order_main\`.\`order_id\` = \`payment_detail\`.\`order_id\`" +
+    "WHERE \`member_id\` = ?";
+
+  const [rs3] = await db.query(sql3, [memberId]);
+  const sub_id_arr = JSON.parse(rs2[0].sub_id);
+  let new_data = [];
+  let info_data = {
+    order_id: rs1[0]["order_id"],
+    order_d_price: rs2[0]["order_d_price"],
+    card_num: rs3[0]["card_num"],
+    order_date: rs1[0]["order_date"],
+    order_state: rs1[0]["order_state"],
+    sub_time: rs1[0]["sub_time"],
+    sub_id: rs2[0]["sub_id"],
+  };
+
+  let plan_name = function (sub_id) {
+    if (sub_id === 1) {
+      return "純米";
+    }
+    if (sub_id === 2) {
+      return "純米吟釀";
+    }
+    if (sub_id === 3) {
+      return "純米大吟釀";
+    }
+  };
+  let plan_price = function (sub_id) {
+    if (sub_id === 1) {
+      return 1300;
+    }
+    if (sub_id === 2) {
+      return 1500;
+    }
+    if (sub_id === 3) {
+      return 1800;
+    }
+  };
+  sub_id_arr.forEach((sub_id) => {
+    const data_row = {
+      sub_id: sub_id,
+      plan_name: plan_name(sub_id),
+      plan_price: plan_price(sub_id),
+      order_id: rs1[0]["order_id"],
+      order_d_price: rs2[0]["order_d_price"],
+      card_num: rs3[0]["card_num"],
+      order_date: rs1[0]["order_date"],
+      order_state: rs1[0]["order_state"],
+      sub_time: rs1[0]["sub_time"],
+    };
+    new_data = [...new_data, data_row];
+  });
+  res.json([info_data, new_data]);
+  // const output = {
+  //   data1: rs1[0],
+  //   data2: rs2[0],
+  //   data3: rs3[0]
+  // };
+  // console.log(output);
+  // res.json(output);
 });
 
 // 帶會員id拿取訂單資料
@@ -498,7 +627,11 @@ router.post("/member/MemberEventList", jwtVerify, async (req, res) => {
                INNER JOIN \`event\` ON \`event\`.\`event_id\` = \`order_event_d\`.\`event_id\`
                WHERE \`member_id\` = ?`;
   const [rs] = await db.query(sql, [memberId]);
-  const rs2 = rs.map((v) => ({ ...v, event_time_start: moment(v.event_time_start).format(fm), order_date: moment(v.order_date).format(fm) }));
+  const rs2 = rs.map((v) => ({
+    ...v,
+    event_time_start: moment(v.event_time_start).format(fm),
+    order_date: moment(v.order_date).format(fm)
+  }));
   res.json(rs2);
 });
 // 已參加
@@ -513,7 +646,11 @@ router.post("/member/MemberEventAlready", jwtVerify, async (req, res) => {
                INNER JOIN \`event\` ON \`event\`.\`event_id\` = \`order_event_d\`.\`event_id\`
                WHERE \`member_id\` = ? ${sqlWhere}`;
   const [rs] = await db.query(sql, [memberId]);
-  const rs2 = rs.map((v) => ({ ...v, event_time_start: moment(v.event_time_start).format(fm), order_date: moment(v.order_date).format(fm) }));
+  const rs2 = rs.map((v) => ({
+    ...v,
+    event_time_start: moment(v.event_time_start).format(fm),
+    order_date: moment(v.order_date).format(fm)
+  }));
   res.json(rs2);
 });
 // 已取消
@@ -528,7 +665,11 @@ router.post("/member/MemberEventCancel", jwtVerify, async (req, res) => {
                INNER JOIN \`event\` ON \`event\`.\`event_id\` = \`order_event_d\`.\`event_id\`
                WHERE \`member_id\` = ? ${sqlWhere}`;
   const [rs] = await db.query(sql, [memberId]);
-  const rs2 = rs.map((v) => ({ ...v, event_time_start: moment(v.event_time_start).format(fm), order_date: moment(v.order_date).format(fm) }));
+  const rs2 = rs.map((v) => ({
+    ...v,
+    event_time_start: moment(v.event_time_start).format(fm),
+    order_date: moment(v.order_date).format(fm)
+  }));
   res.json(rs2);
 });
 
