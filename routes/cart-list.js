@@ -9,7 +9,7 @@ const db = require("../modules/connect-db");
 // TODO:
 //  member_id要去拿登入的member_id
 router.get("/sake", async (req, res) => {
-  const member_id = req.query.member_id ? parseInt(req.query.member_id) : "no meber id";
+  const member_id = req.query.member_id !=='noMemberId' ? parseInt(req.query.member_id) : "no meber id";
   console.log(member_id);
   const sql = `
    SELECT cs.*, cm.mark_id, mark.pics, mark.mark_name, ps.pro_name, ps.pro_img, pf.pro_price, pf.pro_capacity, pf.pro_gift, pf.pro_mark 
