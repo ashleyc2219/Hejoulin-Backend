@@ -9,7 +9,7 @@ const db = require("../modules/connect-db");
 // TODO:
 //  member_id要去拿登入的member_id
 router.get("/sake", async (req, res) => {
-  const member_id = req.query.member_id ? parseInt(req.query.member_id) : 1;
+  const member_id = req.query.member_id ? parseInt(req.query.member_id) : "no meber id";
   console.log(member_id);
   const sql = `
    SELECT cs.*, cm.mark_id, mark.pics, mark.mark_name, ps.pro_name, ps.pro_img, pf.pro_price, pf.pro_capacity, pf.pro_gift, pf.pro_mark 
@@ -22,10 +22,10 @@ router.get("/sake", async (req, res) => {
     ON cs.pro_id=ps.pro_id 
     LEFT JOIN product_format pf 
     ON cs.pro_id=pf.format_id 
-    WHERE cs.member_id=${member_id}
+    WHERE cs.member_id=?
     ORDER BY cart_sake_id
     `;
-  const [result, fields] = await db.query(sql);
+  const [result, fields] = await db.query(sql, [member_id]);
   res.json(result);
 });
 
@@ -37,7 +37,7 @@ router.delete("/sake", async (req, res) => {
     error: "",
   };
 
-  const member_id = req.body.member_id ? parseInt(req.body.member_id) : 1;
+  const member_id = req.body.member_id ? parseInt(req.body.member_id) : 'no member id';
   const cart_sake_id = req.body.cart_sake_id ? req.body.cart_sake_id : "0";
   const pro_id = req.body.pro_id ? parseInt(req.body.pro_id) : "0";
   const sql_sake =
@@ -161,9 +161,9 @@ router.get("/gift", async (req, res) => {
     ON ps.pro_id=pf.format_id 
     LEFT JOIN product_container pc 
     ON pf.container_id=pc.container_id 
-    WHERE cg.member_id=${member_id}
+    WHERE cg.member_id=?
     `;
-  const [result, fields] = await db.query(sql);
+  const [result, fields] = await db.query(sql, [member_id]);
   let tidyResult = [];
   let twoInOne = {};
   let twoInOne_cartGiftId = 0;
