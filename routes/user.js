@@ -9,20 +9,19 @@ const jwt = require("jsonwebtoken");
 const router = express.Router();
 
 async function getPage(req, res) {
-  const perPage = 6;//一頁幾筆
+  const perPage = 6; //一頁幾筆
   //用戶要看第幾頁
   let page = req.query.page ? parseInt(req.query.page) : 1;
   let sqlWhere = " WHERE 1 ";
   //輸出
-  const
-    output = {
-      //success: false,
-      perPage,
-      page,
-      totalRows: 0,
-      totalPages: 0,
-      rows: []
-    };
+  const output = {
+    //success: false,
+    perPage,
+    page,
+    totalRows: 0,
+    totalPages: 0,
+    rows: [],
+  };
 
   const t_sql = `SELECT COUNT(1) num
                  FROM user ${sqlWhere}`;
@@ -43,10 +42,12 @@ async function getPage(req, res) {
                         \`member_addr\`
                  FROM \`user\`
                           INNER JOIN \`member\` ON \`user\`.\`user_id\` = \`member\`.\`user_id\`
-                 ORDER BY \`member_id\` DESC LIMIT ${perPage * (page - 1)}, ${perPage}`;
+                 ORDER BY \`member_id\` DESC LIMIT ${
+                   perPage * (page - 1)
+                 }, ${perPage}`;
     const [rs2] = await db.query(sql);
     //拿到資料在這邊先做格式轉換
-    rs2.forEach(el => {
+    rs2.forEach((el) => {
       let str = res.locals.toDateString(el.member_bir);
       if (str === "Invalid date") {
         el.member_bir = "沒有輸入資料";
@@ -54,12 +55,13 @@ async function getPage(req, res) {
         el.member_bir = str;
       }
     });
-    rs2.forEach(el => el.member_bir = res.locals.toDateString(el.member_bir));
+    rs2.forEach(
+      (el) => (el.member_bir = res.locals.toDateString(el.member_bir))
+    );
     output.rows = rs2;
   }
   return output;
 }
-
 
 // 帶token進來 回傳member_id
 router.post("/memberId", async (req, res) => {
@@ -81,13 +83,12 @@ router.post("/memberId", async (req, res) => {
 
 // 帶會員id拿到單筆會員資料
 router.post("/member", jwtVerify, async (req, res) => {
-
   const memberId = res.locals.auth[0].member_id;
   console.log();
-  const sql = "SELECT \`member_id\`,\`user_account\`,\`user_pass\`,\`member_name\`,\`member_bir\`,\`member_mob\`,\`member_addr\`FROM \`user\` INNER JOIN \`member\` ON \`user\`.\`user_id\` = \`member\`.\`user_id\` WHERE member_id =? ";
+  const sql =
+    "SELECT `member_id`,`user_account`,`user_pass`,`member_name`,`member_bir`,`member_mob`,`member_addr`FROM `user` INNER JOIN `member` ON `user`.`user_id` = `member`.`user_id` WHERE member_id =? ";
   const [rs] = await db.query(sql, [memberId]);
   res.json(rs);
-
 });
 
 // 忘記密碼 - 改密碼
@@ -95,7 +96,7 @@ router.put("/member/forgetPassChange", upload.none(), async (req, res) => {
   const output = {
     success: false,
     postData: req.body,
-    error: ""
+    error: "",
   };
 
   const userPass = req.body.user_pass;
@@ -117,23 +118,19 @@ router.put("/member/forgetPassChange", upload.none(), async (req, res) => {
     console.log(result);
     if (result.affectedRows === 1) {
       output.success = true;
-
     } else {
       output.error = "設定密碼失敗";
     }
   } catch (ex) {
     console.log(ex);
     output.error = "建議您檢查是否輸入舊密碼";
-
   }
 
   res.json(output);
-
 });
 
 // 會員中心檢查舊密碼是否正確
 router.post("/pass/check", jwtVerify, async (req, res) => {
-
   console.log(req.body.user_passOld);
   const userAccount = res.locals.auth[0].user_account;
   const sql = "SELECT `user_pass` FROM user WHERE `user_account`=?";
@@ -148,7 +145,6 @@ router.post("/pass/check", jwtVerify, async (req, res) => {
   } else {
     res.json({ used: "舊密碼輸入錯誤" });
   }
-
 });
 
 // 會員中心更改密碼
@@ -156,7 +152,7 @@ router.put("/member/passChange", jwtVerify, async (req, res) => {
   const output = {
     success: false,
     postData: req.body,
-    error: ""
+    error: "",
   };
 
   console.log(res.locals.auth[0]);
@@ -175,18 +171,15 @@ router.put("/member/passChange", jwtVerify, async (req, res) => {
     console.log(result);
     if (result.affectedRows === 1) {
       output.success = true;
-
     } else {
       output.error = "設定密碼失敗";
     }
   } catch (ex) {
     console.log(ex);
     output.error = "建議您檢查是否輸入新密碼";
-
   }
 
   res.json(output);
-
 });
 
 // 會員中心更改會員資料
@@ -194,32 +187,35 @@ router.put("/member/Change", jwtVerify, async (req, res) => {
   const output = {
     success: false,
     postData: req.body,
-    error: ""
+    error: "",
   };
 
   const memberName = req.body.member_name;
   const memberMob = req.body.member_mob;
   const memberId = res.locals.auth[0].member_id;
   const memberBir = req.body.birY + "-" + req.body.birM + "-" + req.body.birD;
-  const sql = "UPDATE member SET member_name=?, member_mob=?, member_bir=? WHERE member_id = ?";
+  const sql =
+    "UPDATE member SET member_name=?, member_mob=?, member_bir=? WHERE member_id = ?";
 
   try {
-    [result] = await db.query(sql, [memberName, memberMob, memberBir, memberId]);
+    [result] = await db.query(sql, [
+      memberName,
+      memberMob,
+      memberBir,
+      memberId,
+    ]);
     console.log(result);
     if (result.affectedRows === 1) {
       output.success = true;
-
     } else {
       output.error = "更新個人資料失敗";
     }
   } catch (ex) {
     console.log(ex);
     output.error = "建議您檢查是否輸入新資料";
-
   }
 
   res.json(output);
-
 });
 
 // 會員中心更改以及新增地址
@@ -227,10 +223,11 @@ router.put("/member/addressChange", jwtVerify, async (req, res) => {
   const output = {
     success: false,
     postData: req.body,
-    error: ""
+    error: "",
   };
 
-  const memberAddr = req.body.member_city + req.body.member_zip + req.body.member_address;
+  const memberAddr =
+    req.body.member_city + req.body.member_zip + req.body.member_address;
   const memberId = res.locals.auth[0].member_id;
   const sql = "UPDATE member SET member_addr=?WHERE member_id = ?";
 
@@ -239,37 +236,32 @@ router.put("/member/addressChange", jwtVerify, async (req, res) => {
     console.log(result);
     if (result.affectedRows === 1) {
       output.success = true;
-
     } else {
       output.error = "更新會員地址失敗";
     }
   } catch (ex) {
     console.log(ex);
     output.error = "建議您檢查是否輸入新資料";
-
   }
 
   res.json(output);
-
 });
 
 // 帶會員id拿取酒標作品資料
 router.post("/member/MemberMark", jwtVerify, async (req, res) => {
-
   const memberId = res.locals.auth[0].member_id;
   console.log(memberId);
-  const sql = "SELECT `pics`, `mark_name`, `mark_id` FROM `mark` WHERE `member_id` =?";
+  const sql =
+    "SELECT `pics`, `mark_name`, `mark_id` FROM `mark` WHERE `member_id` =?";
   const [rs] = await db.query(sql, [memberId]);
   console.log(rs);
   res.json(rs);
-
 });
 
 // 帶會員id刪除酒標作品資料
 router.delete("/member/MemberMarkDelete", jwtVerify, async (req, res) => {
-
   const output = {
-    success: false
+    success: false,
   };
 
   const markId = req.body.mark_id;
@@ -281,13 +273,13 @@ router.delete("/member/MemberMarkDelete", jwtVerify, async (req, res) => {
     output.success = true;
   }
   res.json(output);
-
 });
 
 // 帶會員id拿取收藏商品資料
 router.post("/member/MemberFav", jwtVerify, async (req, res) => {
   const memberId = res.locals.auth[0].member_id;
-  const sql = "SELECT `member_id`,`pro_price`,`pro_mark`,`pro_name`,`pro_img`,`favorite`.`pro_id`" +
+  const sql =
+    "SELECT `member_id`,`pro_price`,`pro_mark`,`pro_name`,`pro_img`,`favorite`.`pro_id`" +
     " FROM `product_sake` INNER JOIN `favorite` ON `favorite`.`pro_id` = `product_sake`.`pro_id`" +
     " INNER JOIN `product_format` ON  `product_format`.`format_id` = `product_sake`.`format_id` WHERE `member_id` = ?";
   const [rs] = await db.query(sql, [memberId]);
@@ -298,7 +290,7 @@ router.post("/member/MemberFav", jwtVerify, async (req, res) => {
 router.post("/member/MemberFav/delete", async (req, res) => {
   const output = {
     success: false,
-    error: ""
+    error: "",
   };
   console.log(req.body);
   // const userAccount = res.locals.auth;
@@ -310,7 +302,7 @@ router.post("/member/MemberFav/delete", async (req, res) => {
                  AND \`pro_id\` = ?`;
   const [result] = await db.query(sql, [
     parseInt(req.body.member_id),
-    parseInt(req.body.pro_id)
+    parseInt(req.body.pro_id),
   ]);
 
   console.log(result);
@@ -323,27 +315,33 @@ router.post("/member/MemberFav/delete", async (req, res) => {
 // 帶會員id拿取訂閱清單資料
 router.post("/member/MemberSublist", jwtVerify, async (req, res) => {
   const memberId = res.locals.auth[0].member_id;
-  const fm = ("YYYY-MM-DD");
-  const sql1 = "SELECT \`order_main\`.\`member_id\`,\`order_main\`.\`order_date\`,\`sub_time\`,\`order_sub_d\`.\`order_state\`,\`order_sub_d\`.\`subtime_id\`,\`order_sub_d\`.\`order_d_id\`,\`order_sub_d\`.\`order_id\`" +
-    "FROM \`order_main\`" +
-    "INNER JOIN \`order_sub_d\` ON \`order_main\`.\`order_id\` = \`order_sub_d\`.\`order_id\` " +
-    "INNER JOIN \`sub_time\` ON \`sub_time\`.\`subtime_id\` = \`order_sub_d\`.\`subtime_id\`" +
-    "WHERE \`order_main\`.\`member_id\` = ?";
+  const fm = "YYYY-MM-DD";
+  const sql1 =
+    "SELECT `order_main`.`member_id`,`order_main`.`order_date`,`sub_time`,`order_sub_d`.`order_state`,`order_sub_d`.`subtime_id`,`order_sub_d`.`order_d_id`,`order_sub_d`.`order_id`" +
+    "FROM `order_main`" +
+    "INNER JOIN `order_sub_d` ON `order_main`.`order_id` = `order_sub_d`.`order_id` " +
+    "INNER JOIN `sub_time` ON `sub_time`.`subtime_id` = `order_sub_d`.`subtime_id`" +
+    "WHERE `order_main`.`member_id` = ?";
 
   const [rs0] = await db.query(sql1, [memberId]);
-  const rs1 = rs0.map((v) => ({ ...v, order_date: moment(v.order_date).format(fm) }));
-  const sql2 = "SELECT \`order_sub_d\`.\`sub_id\`, \`order_sub_d\`.\`order_d_price\`, \`member_id\`" +
-    "FROM \`order_sub_d\`" +
-    "LEFT JOIN \`order_main\` ON \`order_main\`.\`order_id\` = \`order_sub_d\`.\`order_id\`" +
-    "LEFT JOIN \`sub_plan\` ON \`sub_plan\`.\`sub_id\` = \`order_sub_d\`.\`sub_id\`" +
-    "WHERE \`order_main\`.\`member_id\` = ?";
+  const rs1 = rs0.map((v) => ({
+    ...v,
+    order_date: moment(v.order_date).format(fm),
+  }));
+  const sql2 =
+    "SELECT `order_sub_d`.`sub_id`, `order_sub_d`.`order_d_price`, `member_id`" +
+    "FROM `order_sub_d`" +
+    "LEFT JOIN `order_main` ON `order_main`.`order_id` = `order_sub_d`.`order_id`" +
+    "LEFT JOIN `sub_plan` ON `sub_plan`.`sub_id` = `order_sub_d`.`sub_id`" +
+    "WHERE `order_main`.`member_id` = ?";
 
   const [rs2] = await db.query(sql2, [memberId]);
 
-  const sql3 = "SELECT \`card_num\`, \`member_id\`" +
-    "FROM \`payment_detail\`" +
-    "LEFT JOIN \`order_main\` ON \`order_main\`.\`order_id\` = \`payment_detail\`.\`order_id\`" +
-    "WHERE \`member_id\` = ?";
+  const sql3 =
+    "SELECT `card_num`, `member_id`" +
+    "FROM `payment_detail`" +
+    "LEFT JOIN `order_main` ON `order_main`.`order_id` = `payment_detail`.`order_id`" +
+    "WHERE `member_id` = ?";
 
   const [rs3] = await db.query(sql3, [memberId]);
 
@@ -400,8 +398,9 @@ router.post("/member/MemberSublist", jwtVerify, async (req, res) => {
 // 已過期
 router.post("/member/MemberSublist/over", jwtVerify, async (req, res) => {
   const memberId = res.locals.auth[0].member_id;
+  // const memberId = 124;
   let sqlWhere = "";
-  const fm = ("YYYY-MM-DD");
+  const fm = "YYYY-MM-DD";
   if (memberId) sqlWhere += ` AND \`order_sub_d\`.\`order_state\` = '已結束'`;
   const sql1 = `SELECT \`order_main\`.\`member_id\`,\`order_main\`.\`order_date\`,\`sub_time\`,\`order_sub_d\`.\`order_state\`,\`order_sub_d\`.\`subtime_id\`,\`order_sub_d\`.\`order_d_id\`,\`order_sub_d\`.\`order_id\`
     FROM \`order_sub_d\` 
@@ -410,71 +409,82 @@ router.post("/member/MemberSublist/over", jwtVerify, async (req, res) => {
     WHERE \`order_main\`.\`member_id\` = ? ${sqlWhere}`;
 
   const [rs0] = await db.query(sql1, [memberId]);
-  const rs1 = rs0.map((v) => ({ ...v, order_date: moment(v.order_date).format(fm) }));
+  if (rs0.length > 0) {
+    const rs1 = rs0.map((v) => ({
+      ...v,
+      order_date: moment(v.order_date).format(fm),
+    }));
 
-  const sql2 = "SELECT \`order_sub_d\`.\`sub_id\`, \`order_sub_d\`.\`order_d_price\`, \`member_id\`" +
-    "FROM \`order_sub_d\`" +
-    "LEFT JOIN \`order_main\` ON \`order_main\`.\`order_id\` = \`order_sub_d\`.\`order_id\`" +
-    "LEFT JOIN \`sub_plan\` ON \`sub_plan\`.\`sub_id\` = \`order_sub_d\`.\`sub_id\`" +
-    "WHERE \`order_main\`.\`member_id\` = ?";
+    const sql2 =
+      "SELECT `order_sub_d`.`sub_id`, `order_sub_d`.`order_d_price`, `member_id`" +
+      "FROM `order_sub_d`" +
+      "LEFT JOIN `order_main` ON `order_main`.`order_id` = `order_sub_d`.`order_id`" +
+      "LEFT JOIN `sub_plan` ON `sub_plan`.`sub_id` = `order_sub_d`.`sub_id`" +
+      "WHERE `order_main`.`member_id` = ?";
 
-  const [rs2] = await db.query(sql2, [memberId]);
+    const [rs2] = await db.query(sql2, [memberId]);
 
-  const sql3 = "SELECT \`card_num\`, \`member_id\`" +
-    "FROM \`payment_detail\`" +
-    "LEFT JOIN \`order_main\` ON \`order_main\`.\`order_id\` = \`payment_detail\`.\`order_id\`" +
-    "WHERE \`member_id\` = ?";
+    const sql3 =
+      "SELECT `card_num`, `member_id`" +
+      "FROM `payment_detail`" +
+      "LEFT JOIN `order_main` ON `order_main`.`order_id` = `payment_detail`.`order_id`" +
+      "WHERE `member_id` = ?";
 
-  const [rs3] = await db.query(sql3, [memberId]);
-  const sub_id_arr = JSON.parse(rs2[0].sub_id);
-  let new_data = [];
-  let info_data = {
-    order_id: rs1[0]["order_id"],
-    order_d_price: rs2[0]["order_d_price"],
-    card_num: rs3[0]["card_num"],
-    order_date: rs1[0]["order_date"],
-    order_state: rs1[0]["order_state"],
-    sub_time: rs1[0]["sub_time"],
-    sub_id: rs2[0]["sub_id"],
-  };
-
-  let plan_name = function (sub_id) {
-    if (sub_id === 1) {
-      return "純米";
-    }
-    if (sub_id === 2) {
-      return "純米吟釀";
-    }
-    if (sub_id === 3) {
-      return "純米大吟釀";
-    }
-  };
-  let plan_price = function (sub_id) {
-    if (sub_id === 1) {
-      return 1300;
-    }
-    if (sub_id === 2) {
-      return 1500;
-    }
-    if (sub_id === 3) {
-      return 1800;
-    }
-  };
-  sub_id_arr.forEach((sub_id) => {
-    const data_row = {
-      sub_id: sub_id,
-      plan_name: plan_name(sub_id),
-      plan_price: plan_price(sub_id),
+    const [rs3] = await db.query(sql3, [memberId]);
+    const sub_id_arr = JSON.parse(rs2[0].sub_id);
+    let new_data = [];
+    let info_data = {
       order_id: rs1[0]["order_id"],
       order_d_price: rs2[0]["order_d_price"],
       card_num: rs3[0]["card_num"],
       order_date: rs1[0]["order_date"],
       order_state: rs1[0]["order_state"],
       sub_time: rs1[0]["sub_time"],
+      sub_id: rs2[0]["sub_id"],
     };
-    new_data = [...new_data, data_row];
-  });
-  res.json([info_data, new_data]);
+
+    let plan_name = function (sub_id) {
+      if (sub_id === 1) {
+        return "純米";
+      }
+      if (sub_id === 2) {
+        return "純米吟釀";
+      }
+      if (sub_id === 3) {
+        return "純米大吟釀";
+      }
+    };
+    let plan_price = function (sub_id) {
+      if (sub_id === 1) {
+        return 1300;
+      }
+      if (sub_id === 2) {
+        return 1500;
+      }
+      if (sub_id === 3) {
+        return 1800;
+      }
+    };
+    sub_id_arr.forEach((sub_id) => {
+      const data_row = {
+        sub_id: sub_id,
+        plan_name: plan_name(sub_id),
+        plan_price: plan_price(sub_id),
+        order_id: rs1[0]["order_id"],
+        order_d_price: rs2[0]["order_d_price"],
+        card_num: rs3[0]["card_num"],
+        order_date: rs1[0]["order_date"],
+        order_state: rs1[0]["order_state"],
+        sub_time: rs1[0]["sub_time"],
+      };
+      new_data = [...new_data, data_row];
+    });
+    res.json([info_data, new_data]);
+  }else{
+    res.json('')
+  }
+
+
   // const output = {
   //   data1: rs1[0],
   //   data2: rs2[0],
@@ -488,22 +498,21 @@ router.post("/member/MemberSublist/over", jwtVerify, async (req, res) => {
 router.post("/member/MemberOrderList", jwtVerify, async (req, res) => {
   const memberId = res.locals.auth[0].member_id;
   // const state = res.body.order_state ? res.body.order_state : '';
-  const fm = ("YYYY-MM-DD");
-  const perPage = 6;//一頁幾筆
+  const fm = "YYYY-MM-DD";
+  const perPage = 6; //一頁幾筆
   //用戶要看第幾頁
   let page = req.body.page ? parseInt(req.body.page) : 1;
   //輸出
-  const
-    output = {
-      //success: false,
-      perPage,
-      page,
-      totalRows: 0,
-      totalPages: 0,
-      rows: [],
-      rs: "",
-      tabData: ""
-    };
+  const output = {
+    //success: false,
+    perPage,
+    page,
+    totalRows: 0,
+    totalPages: 0,
+    rows: [],
+    rs: "",
+    tabData: "",
+  };
 
   const t_sql = `SELECT COUNT(1) num
                  FROM \`order_main\`
@@ -523,10 +532,15 @@ router.post("/member/MemberOrderList", jwtVerify, async (req, res) => {
   LEFT JOIN \`product_format\` ON \`product_sake\`.\`format_id\` = \`product_format\`.\`format_id\`
   LEFT JOIN \`shipment_detail\` ON \`order_main\`.\`order_id\` = \`shipment_detail\`.\`order_id\`
   LEFT JOIN \`payment_detail\` ON \`order_main\`.\`order_id\` = \`payment_detail\`.\`order_id\`
-  WHERE \`member_id\` = ? ORDER BY \`order_id\` DESC LIMIT ${perPage * (page - 1)}, ${perPage}`;
+  WHERE \`member_id\` = ? ORDER BY \`order_id\` DESC LIMIT ${
+    perPage * (page - 1)
+  }, ${perPage}`;
     const [rs2] = await db.query(sql, [memberId]);
 
-    output.rows = rs2.map((v) => ({ ...v, order_date: moment(v.order_date).format(fm) }));
+    output.rows = rs2.map((v) => ({
+      ...v,
+      order_date: moment(v.order_date).format(fm),
+    }));
   }
   const sql2 = `SELECT \`order_state\`, \`order_d_price\`, \`order_date\`, \`member_id\`, \`order_main\`.\`order_id\`, \`order_sake_d\`.\`order_d_id\`
                FROM \`order_main\`
@@ -544,16 +558,18 @@ router.post("/member/MemberOrderList", jwtVerify, async (req, res) => {
   WHERE \`member_id\` = ?`;
   output.tabData = await db.query(sql3, [memberId]);
 
-  output.rs = rs.map((v) => ({ ...v, order_date: moment(v.order_date).format(fm) }));
+  output.rs = rs.map((v) => ({
+    ...v,
+    order_date: moment(v.order_date).format(fm),
+  }));
   res.json(output);
 });
 // 待出貨
 router.post("/member/orderListTab1", jwtVerify, async (req, res) => {
-
   const memberId = res.locals.auth[0].member_id;
-  const fm = ("YYYY-MM-DD");
+  const fm = "YYYY-MM-DD";
   let sqlWhere = "";
-  const perPage = 6;//一頁幾筆
+  const perPage = 6; //一頁幾筆
   //用戶要看第幾頁
   let page = req.body.page ? parseInt(req.body.page) : 1;
   if (memberId) sqlWhere += ` AND  order_state = '待出貨'`;
@@ -564,19 +580,22 @@ router.post("/member/orderListTab1", jwtVerify, async (req, res) => {
   LEFT JOIN \`product_format\` ON \`product_sake\`.\`format_id\` = \`product_format\`.\`format_id\`
   LEFT JOIN \`shipment_detail\` ON \`order_main\`.\`order_id\` = \`shipment_detail\`.\`order_id\`
   LEFT JOIN \`payment_detail\` ON \`order_main\`.\`order_id\` = \`payment_detail\`.\`order_id\`
-  WHERE \`member_id\` = ? ${sqlWhere} ORDER BY \`order_id\` DESC LIMIT ${perPage * (page - 1)}, ${perPage}`;
+  WHERE \`member_id\` = ? ${sqlWhere} ORDER BY \`order_id\` DESC LIMIT ${
+    perPage * (page - 1)
+  }, ${perPage}`;
   const [rs] = await db.query(sql, [memberId]);
-  const cRs = rs.map((v) => ({ ...v, order_date: moment(v.order_date).format(fm) }));
+  const cRs = rs.map((v) => ({
+    ...v,
+    order_date: moment(v.order_date).format(fm),
+  }));
   res.json(cRs);
-
 });
 // 待收貨
 router.post("/member/orderListTab2", jwtVerify, async (req, res) => {
-
   const memberId = res.locals.auth[0].member_id;
-  const fm = ("YYYY-MM-DD");
+  const fm = "YYYY-MM-DD";
   let sqlWhere = "";
-  const perPage = 6;//一頁幾筆
+  const perPage = 6; //一頁幾筆
   //用戶要看第幾頁
   let page = req.body.page ? parseInt(req.body.page) : 1;
   if (memberId) sqlWhere += ` AND  order_state = '已出貨'`;
@@ -587,19 +606,22 @@ router.post("/member/orderListTab2", jwtVerify, async (req, res) => {
   LEFT JOIN \`product_format\` ON \`product_sake\`.\`format_id\` = \`product_format\`.\`format_id\`
   LEFT JOIN \`shipment_detail\` ON \`order_main\`.\`order_id\` = \`shipment_detail\`.\`order_id\`
   LEFT JOIN \`payment_detail\` ON \`order_main\`.\`order_id\` = \`payment_detail\`.\`order_id\`
-  WHERE \`member_id\` = ? ${sqlWhere} ORDER BY \`order_id\` DESC LIMIT ${perPage * (page - 1)}, ${perPage}`;
+  WHERE \`member_id\` = ? ${sqlWhere} ORDER BY \`order_id\` DESC LIMIT ${
+    perPage * (page - 1)
+  }, ${perPage}`;
   const [rs] = await db.query(sql, [memberId]);
-  const cRs = rs.map((v) => ({ ...v, order_date: moment(v.order_date).format(fm) }));
+  const cRs = rs.map((v) => ({
+    ...v,
+    order_date: moment(v.order_date).format(fm),
+  }));
   res.json(cRs);
-
 });
 // 已取消
 router.post("/member/orderListTab3", jwtVerify, async (req, res) => {
-
   const memberId = res.locals.auth[0].member_id;
-  const fm = ("YYYY-MM-DD");
+  const fm = "YYYY-MM-DD";
   let sqlWhere = "";
-  const perPage = 6;//一頁幾筆
+  const perPage = 6; //一頁幾筆
   //用戶要看第幾頁
   let page = req.body.page ? parseInt(req.body.page) : 1;
   if (memberId) sqlWhere += ` AND  order_state = '已取消'`;
@@ -610,17 +632,21 @@ router.post("/member/orderListTab3", jwtVerify, async (req, res) => {
   LEFT JOIN \`product_format\` ON \`product_sake\`.\`format_id\` = \`product_format\`.\`format_id\`
   LEFT JOIN \`shipment_detail\` ON \`order_main\`.\`order_id\` = \`shipment_detail\`.\`order_id\`
   LEFT JOIN \`payment_detail\` ON \`order_main\`.\`order_id\` = \`payment_detail\`.\`order_id\`
-  WHERE \`member_id\` = ? ${sqlWhere} ORDER BY \`order_id\` DESC LIMIT ${perPage * (page - 1)}, ${perPage}`;
+  WHERE \`member_id\` = ? ${sqlWhere} ORDER BY \`order_id\` DESC LIMIT ${
+    perPage * (page - 1)
+  }, ${perPage}`;
   const [rs] = await db.query(sql, [memberId]);
-  const cRs = rs.map((v) => ({ ...v, order_date: moment(v.order_date).format(fm) }));
+  const cRs = rs.map((v) => ({
+    ...v,
+    order_date: moment(v.order_date).format(fm),
+  }));
   res.json(cRs);
-
 });
 
 // 帶會員id拿取活動記錄資料
 router.post("/member/MemberEventList", jwtVerify, async (req, res) => {
   const memberId = res.locals.auth[0].member_id;
-  const fm = ("YYYY-MM-DD");
+  const fm = "YYYY-MM-DD";
   const sql = `SELECT \`order_d_id\`,\`order_event_d\`.\`order_name\`,\`order_event_d\`.\`order_mobile\`,\`order_event_d\`.\`order_email\`,\`order_state\`,\`order_event_d\`.\`order_id\`,\`order_d_price\`,\`order_date\`,\`member_id\`,\`event_location\`,\`event_name\`,\`event_time_start\`
                FROM \`order_main\`
                INNER JOIN \`order_event_d\` ON \`order_main\`.\`order_id\` = \`order_event_d\`.\`order_id\`
@@ -630,14 +656,14 @@ router.post("/member/MemberEventList", jwtVerify, async (req, res) => {
   const rs2 = rs.map((v) => ({
     ...v,
     event_time_start: moment(v.event_time_start).format(fm),
-    order_date: moment(v.order_date).format(fm)
+    order_date: moment(v.order_date).format(fm),
   }));
   res.json(rs2);
 });
 // 已參加
 router.post("/member/MemberEventAlready", jwtVerify, async (req, res) => {
   const memberId = res.locals.auth[0].member_id;
-  const fm = ("YYYY-MM-DD");
+  const fm = "YYYY-MM-DD";
   let sqlWhere = "";
   if (memberId) sqlWhere += ` AND  order_state = '已參加'`;
   const sql = `SELECT \`order_d_id\`,\`order_event_d\`.\`order_name\`,\`order_event_d\`.\`order_mobile\`,\`order_event_d\`.\`order_email\`,\`order_state\`,\`order_event_d\`.\`order_id\`,\`order_d_price\`,\`order_date\`,\`member_id\`,\`event_location\`,\`event_name\`,\`event_time_start\`
@@ -649,14 +675,14 @@ router.post("/member/MemberEventAlready", jwtVerify, async (req, res) => {
   const rs2 = rs.map((v) => ({
     ...v,
     event_time_start: moment(v.event_time_start).format(fm),
-    order_date: moment(v.order_date).format(fm)
+    order_date: moment(v.order_date).format(fm),
   }));
   res.json(rs2);
 });
 // 已取消
 router.post("/member/MemberEventCancel", jwtVerify, async (req, res) => {
   const memberId = res.locals.auth[0].member_id;
-  const fm = ("YYYY-MM-DD");
+  const fm = "YYYY-MM-DD";
   let sqlWhere = "";
   if (memberId) sqlWhere += ` AND  order_state = '已取消'`;
   const sql = `SELECT \`order_d_id\`,\`order_event_d\`.\`order_name\`,\`order_event_d\`.\`order_mobile\`,\`order_event_d\`.\`order_email\`,\`order_state\`,\`order_event_d\`.\`order_id\`,\`order_d_price\`,\`order_date\`,\`member_id\`,\`event_location\`,\`event_name\`,\`event_time_start\`
@@ -668,13 +694,14 @@ router.post("/member/MemberEventCancel", jwtVerify, async (req, res) => {
   const rs2 = rs.map((v) => ({
     ...v,
     event_time_start: moment(v.event_time_start).format(fm),
-    order_date: moment(v.order_date).format(fm)
+    order_date: moment(v.order_date).format(fm),
   }));
   res.json(rs2);
 });
 
 // 修改會員資料
-router.route("/edit")
+router
+  .route("/edit")
   .get(jwtVerify, async (req, res) => {
     const sql = `SELECT \`member_id\`,
                         \`user_account\`,
@@ -697,7 +724,7 @@ router.route("/edit")
   .post(jwtVerify, async (req, res) => {
     const output = {
       success: false,
-      postData: req.body
+      postData: req.body,
     };
     const hash = await bcrypt.hash(req.body.user_pass, 10);
     const input = { ...req.body };
@@ -715,7 +742,7 @@ router.route("/edit")
         req.body.member_mob,
         req.body.member_addr,
         req.params.user_id,
-        req.params.user_id
+        req.params.user_id,
       ]);
     } catch (ex) {
       output.error = ex.toString();
@@ -726,7 +753,6 @@ router.route("/edit")
         output.success = true;
       } else {
         output.error = "資料沒有變更";
-
       }
     }
 
@@ -734,5 +760,3 @@ router.route("/edit")
   });
 
 module.exports = router;
-
-
