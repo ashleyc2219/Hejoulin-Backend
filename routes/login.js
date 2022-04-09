@@ -3,7 +3,6 @@ const bcrypt = require("bcryptjs");
 const db = require("../modules/connect-db");
 const upload = require("./../modules/upload-images");
 const jwt = require("jsonwebtoken");
-const { jwtVerify } = require("../modules/jwtVerify");
 
 const router = express.Router();
 
@@ -139,20 +138,20 @@ router.post("/send-email", upload.none(), async (req, res) => {
     const transporter = nodemailer.createTransport({
       service: "Gmail",
       auth: {
-        user: "cweihao2956@gmail.com",
-        pass: "a128440816"
+        user: "hejoulin04@gmail.com",
+        pass: "LetHejoulin04LogIn",
       }
     }); 
 
     const options = {
       // 寄件者
-      from: "cweihao2956@gmail.com",
+      from: "hejoulin04@gmail.com",
       // 收件者
       to: to,
       // 副本
-      cc: "cweihao2956@gmail.com",
+      cc: "hejoulin04@gmail.com",
       // 密件副本
-      bcc: "cweihao2956@gmail.com",
+      bcc: "hejoulin04@gmail.com",
       // 主旨
       subject: "禾酒林 : 密碼驗證信", // Subject line
       // 純文字
