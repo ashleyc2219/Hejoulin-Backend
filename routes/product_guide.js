@@ -20,11 +20,11 @@ router.get("/", async (req, res) => {
       where += ` AND pf.pro_price BETWEEN ${priceLow} AND ${priceHigh}`;
     if (gift) where += ` AND pf.pro_gift > 0`
 
-    const sql = `SELECT * FROM product_sake ps JOIN  product_format pf ON pf.format_id = ps.format_id ${where} ORDER BY rand () LIMIT 3`;
+    const sql = `SELECT * FROM product_sake ps JOIN product_format pf ON pf.format_id = ps.format_id ${where} ORDER BY rand () LIMIT 3`;
     const [rs, fields] = await db.query(sql);
     return res.json(rs);
   }
-  const sql = `SELECT * FROM product_sake ps JOIN  product_format pf ON pf.format_id = ps.format_id ORDER BY rand () LIMIT 3`;
+  const sql = `SELECT * FROM product_sake ps JOIN product_format pf ON pf.format_id = ps.format_id ORDER BY rand () LIMIT 3`;
   const [rs, fields] = await db.query(sql);
   return res.json(rs);
 });
