@@ -95,6 +95,7 @@ router.get("/order-gift", async (req, res) => {
       tidyResult = [...tidyResult, i];
     }
   }
+  console.log(tidyResult);
   res.json(tidyResult);
   // res.json(result);
 });
@@ -103,6 +104,7 @@ router.get("/order-info", async (req, res) => {
   const order_id = req.query.order_id
     ? parseInt(req.query.order_id)
     : "20220110001";
+  console.log(order_id);
   const sql = `SELECT om.order_id, om.order_name, om.order_mobile, 
                 om.order_email, om.used_code, om.order_date, pd.card_num, sd.shipment_method, sd.ship_fee, sd.store_id, sd.receiver, sd.receiver_mobile, sd.shipment_address, sd.shipment_note, store.store_name, store.store_address FROM order_main om 
                 LEFT JOIN payment_detail pd

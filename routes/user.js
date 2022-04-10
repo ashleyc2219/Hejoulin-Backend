@@ -356,10 +356,10 @@ router.post("/member/MemberSublist", jwtVerify, async (req, res) => {
     order_date: rs1[0]["order_date"],
     order_state: rs1[0]["order_state"],
     sub_time: rs1[0]["sub_time"],
-    sub_id: rs2[0]["sub_id"],
+    sub_id: rs2[0]["sub_id"]
   };
 
-  let plan_name = function (sub_id) {
+  let plan_name = function(sub_id) {
     if (sub_id === 1) {
       return "純米";
     }
@@ -370,7 +370,7 @@ router.post("/member/MemberSublist", jwtVerify, async (req, res) => {
       return "純米大吟釀";
     }
   };
-  let plan_price = function (sub_id) {
+  let plan_price = function(sub_id) {
     if (sub_id === 1) {
       return 1300;
     }
@@ -391,7 +391,7 @@ router.post("/member/MemberSublist", jwtVerify, async (req, res) => {
       card_num: rs3[0]["card_num"],
       order_date: rs1[0]["order_date"],
       order_state: rs1[0]["order_state"],
-      sub_time: rs1[0]["sub_time"],
+      sub_time: rs1[0]["sub_time"]
     };
     new_data = [...new_data, data_row];
   });
@@ -435,10 +435,10 @@ router.post("/member/MemberSublist/over", jwtVerify, async (req, res) => {
     order_date: rs1[0]["order_date"],
     order_state: rs1[0]["order_state"],
     sub_time: rs1[0]["sub_time"],
-    sub_id: rs2[0]["sub_id"],
+    sub_id: rs2[0]["sub_id"]
   };
 
-  let plan_name = function (sub_id) {
+  let plan_name = function(sub_id) {
     if (sub_id === 1) {
       return "純米";
     }
@@ -449,7 +449,7 @@ router.post("/member/MemberSublist/over", jwtVerify, async (req, res) => {
       return "純米大吟釀";
     }
   };
-  let plan_price = function (sub_id) {
+  let plan_price = function(sub_id) {
     if (sub_id === 1) {
       return 1300;
     }
@@ -470,7 +470,7 @@ router.post("/member/MemberSublist/over", jwtVerify, async (req, res) => {
       card_num: rs3[0]["card_num"],
       order_date: rs1[0]["order_date"],
       order_state: rs1[0]["order_state"],
-      sub_time: rs1[0]["sub_time"],
+      sub_time: rs1[0]["sub_time"]
     };
     new_data = [...new_data, data_row];
   });
@@ -616,6 +616,72 @@ router.post("/member/orderListTab3", jwtVerify, async (req, res) => {
   res.json(cRs);
 
 });
+// 拿去訂單總覽資料
+router.post("/member/MemberOrderListTotal", jwtVerify, async (req, res) => {
+  const memberId = res.locals.auth[0].member_id;
+  const fm = ("YYYY-MM-DD");
+  // const perPage = 6;//一頁幾筆
+  //用戶要看第幾頁
+  // let page = req.body.page ? parseInt(req.body.page) : 1;
+  //輸出
+  const
+    output = {
+      //success: false,
+      // perPage,
+      // page,
+      // totalRows: 0,
+      // totalPages: 0,
+      // rows: [],
+      rs: ""
+      // tabData: ""
+    };
+
+  const sql = `SELECT m.\`order_id\`, m.\`order_date\`, (SUM(s.\`order_d_price\`) + SUM(g.\`order_d_price\`)) AS total_price, s.\`order_state\`, g.\`order_state\`
+               FROM \`order_main\` m 
+               INNER JOIN \`order_sake_d\` s ON m.\`order_id\` = s.\`order_id\`
+               INNER JOIN \`order_gift_d\` g ON m.\`order_id\` = g.\`order_id\`
+               WHERE m.\`member_id\` = ? AND m.\`type\` = 'S'
+               GROUP BY m.\`order_id\``;
+
+  const [rs] = await db.query(sql, [memberId]);
+  output.rs = rs.map((v) => ({ ...v, order_date: moment(v.order_date).format(fm) }));
+  res.json(output);
+});
+
+//訂單拿禮盒(組長made 更改資料表傳入值
+router.get("/order-gift", async (req, res) => {
+  const order_id = req.query.order_id;
+  console.log("qq", order_id);
+  // ? parseInt(req.query.order_id)
+  // : "20220110001";
+  const sql = `SELECT omain.order_id, og.order_quantity, og.order_d_price,
+                og.gift_id, og.box_color, ogdd.pro_id, ps.pro_name, ps.pro_img, pf.pro_price, pf.pro_capacity, pg.gift_name
+                FROM order_main omain
+
+                LEFT JOIN order_gift_d og
+                ON omain.order_id=og.order_id
+
+                LEFT JOIN order_gift_d_d ogdd
+                ON og.order_g_id=ogdd.order_g_id
+
+                LEFT JOIN product_sake ps
+                ON ogdd.pro_id=ps.pro_id
+
+                LEFT JOIN product_format pf
+                ON ps.pro_id=pf.format_id
+
+                LEFT JOIN product_container pc
+                ON pf.container_id=pc.container_id
+
+                LEFT JOIN product_gift pg
+                ON og.gift_id=pg.gift_id
+
+                WHERE omain.order_id=? ;`;
+  const [result, fields] = await db.query(sql, [order_id]);
+  console.log(result);
+  res.json(result);
+});
+
 
 // 帶會員id拿取活動記錄資料
 router.post("/member/MemberEventList", jwtVerify, async (req, res) => {
