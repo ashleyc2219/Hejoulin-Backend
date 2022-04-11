@@ -354,10 +354,10 @@ router.post("/member/MemberSublist", jwtVerify, async (req, res) => {
     order_date: rs1[0]["order_date"],
     order_state: rs1[0]["order_state"],
     sub_time: rs1[0]["sub_time"],
-    sub_id: rs2[0]["sub_id"],
+    sub_id: rs2[0]["sub_id"]
   };
 
-  let plan_name = function (sub_id) {
+  let plan_name = function(sub_id) {
     if (sub_id === 1) {
       return "純米";
     }
@@ -368,7 +368,7 @@ router.post("/member/MemberSublist", jwtVerify, async (req, res) => {
       return "純米大吟釀";
     }
   };
-  let plan_price = function (sub_id) {
+  let plan_price = function(sub_id) {
     if (sub_id === 1) {
       return 1300;
     }
@@ -389,7 +389,7 @@ router.post("/member/MemberSublist", jwtVerify, async (req, res) => {
       card_num: rs3[0]["card_num"],
       order_date: rs1[0]["order_date"],
       order_state: rs1[0]["order_state"],
-      sub_time: rs1[0]["sub_time"],
+      sub_time: rs1[0]["sub_time"]
     };
     new_data = [...new_data, data_row];
   });
@@ -430,17 +430,52 @@ router.post("/member/MemberSublist/over", jwtVerify, async (req, res) => {
       "LEFT JOIN `order_main` ON `order_main`.`order_id` = `payment_detail`.`order_id`" +
       "WHERE `member_id` = ?";
 
-    const [rs3] = await db.query(sql3, [memberId]);
-    const sub_id_arr = JSON.parse(rs2[0].sub_id);
-    let new_data = [];
-    let info_data = {
+  const [rs3] = await db.query(sql3, [memberId]);
+  const sub_id_arr = JSON.parse(rs2[0].sub_id);
+  let new_data = [];
+  let info_data = {
+    order_id: rs1[0]["order_id"],
+    order_d_price: rs2[0]["order_d_price"],
+    card_num: rs3[0]["card_num"],
+    order_date: rs1[0]["order_date"],
+    order_state: rs1[0]["order_state"],
+    sub_time: rs1[0]["sub_time"],
+    sub_id: rs2[0]["sub_id"]
+  };
+
+  let plan_name = function(sub_id) {
+    if (sub_id === 1) {
+      return "純米";
+    }
+    if (sub_id === 2) {
+      return "純米吟釀";
+    }
+    if (sub_id === 3) {
+      return "純米大吟釀";
+    }
+  };
+  let plan_price = function(sub_id) {
+    if (sub_id === 1) {
+      return 1300;
+    }
+    if (sub_id === 2) {
+      return 1500;
+    }
+    if (sub_id === 3) {
+      return 1800;
+    }
+  };
+  sub_id_arr.forEach((sub_id) => {
+    const data_row = {
+      sub_id: sub_id,
+      plan_name: plan_name(sub_id),
+      plan_price: plan_price(sub_id),
       order_id: rs1[0]["order_id"],
       order_d_price: rs2[0]["order_d_price"],
       card_num: rs3[0]["card_num"],
       order_date: rs1[0]["order_date"],
       order_state: rs1[0]["order_state"],
-      sub_time: rs1[0]["sub_time"],
-      sub_id: rs2[0]["sub_id"],
+      sub_time: rs1[0]["sub_time"]
     };
 
     let plan_name = function (sub_id) {
@@ -564,84 +599,154 @@ router.post("/member/MemberOrderList", jwtVerify, async (req, res) => {
   }));
   res.json(output);
 });
-// 待出貨
-router.post("/member/orderListTab1", jwtVerify, async (req, res) => {
+// 拿取訂單總覽資料
+router.post("/member/MemberOrderListTotal", jwtVerify, async (req, res) => {
   const memberId = res.locals.auth[0].member_id;
-  const fm = "YYYY-MM-DD";
-  let sqlWhere = "";
-  const perPage = 6; //一頁幾筆
+  const fm = ("YYYY-MM-DD");
+  // const perPage = 6;//一頁幾筆
   //用戶要看第幾頁
-  let page = req.body.page ? parseInt(req.body.page) : 1;
-  if (memberId) sqlWhere += ` AND  order_state = '待出貨'`;
-  const sql = `SELECT \`order_state\`, \`used_code\`, \`order_name\`, \`order_email\`, \`order_mobile\`, \`order_d_price\`, \`order_date\`, \`member_id\`, \`order_main\`.\`order_id\`,\`order_sake_d\`.\`order_d_id\`, \`product_sake\`.\`pro_img\`, \`product_sake\`.\`pro_name\`, \`product_format\`.\`pro_capacity\`, \`shipment_detail\`.\`shipment_method\`, \`shipment_detail\`.\`shipment_address\`, \`payment_detail\`.\`card_num\`
-  FROM \`order_sake_d\`
-  LEFT JOIN \`order_main\` ON \`order_main\`.\`order_id\` = \`order_sake_d\`.\`order_id\`
-  LEFT JOIN \`product_sake\` ON \`order_sake_d\`.\`pro_id\` = \`product_sake\`.\`pro_id\`
-  LEFT JOIN \`product_format\` ON \`product_sake\`.\`format_id\` = \`product_format\`.\`format_id\`
-  LEFT JOIN \`shipment_detail\` ON \`order_main\`.\`order_id\` = \`shipment_detail\`.\`order_id\`
-  LEFT JOIN \`payment_detail\` ON \`order_main\`.\`order_id\` = \`payment_detail\`.\`order_id\`
-  WHERE \`member_id\` = ? ${sqlWhere} ORDER BY \`order_id\` DESC LIMIT ${
-    perPage * (page - 1)
-  }, ${perPage}`;
+  // let page = req.body.page ? parseInt(req.body.page) : 1;
+  //輸出
+  const
+    output = {
+      //success: false,
+      // perPage,
+      // page,
+      // totalRows: 0,
+      // totalPages: 0,
+      // rows: [],
+      rs: ""
+      // tabData: ""
+    };
+
+  const sql = `SELECT m.\`order_id\`, m.\`order_date\`, (SUM(s.\`order_d_price\`) + SUM(g.\`order_d_price\`)) AS total_price, s.\`order_state\`, g.\`order_state\`
+               FROM \`order_main\` m 
+               INNER JOIN \`order_sake_d\` s ON m.\`order_id\` = s.\`order_id\`
+               INNER JOIN \`order_gift_d\` g ON m.\`order_id\` = g.\`order_id\`
+               WHERE m.\`member_id\` = ? AND m.\`type\` = 'S'
+               GROUP BY m.\`order_id\``;
+
   const [rs] = await db.query(sql, [memberId]);
-  const cRs = rs.map((v) => ({
-    ...v,
-    order_date: moment(v.order_date).format(fm),
-  }));
-  res.json(cRs);
+  output.rs = rs.map((v) => ({ ...v, order_date: moment(v.order_date).format(fm) }));
+  res.json(output);
 });
-// 待收貨
-router.post("/member/orderListTab2", jwtVerify, async (req, res) => {
-  const memberId = res.locals.auth[0].member_id;
-  const fm = "YYYY-MM-DD";
-  let sqlWhere = "";
-  const perPage = 6; //一頁幾筆
-  //用戶要看第幾頁
-  let page = req.body.page ? parseInt(req.body.page) : 1;
-  if (memberId) sqlWhere += ` AND  order_state = '已出貨'`;
-  const sql = `SELECT \`order_state\`, \`used_code\`, \`order_name\`, \`order_email\`, \`order_mobile\`, \`order_d_price\`, \`order_date\`, \`member_id\`, \`order_main\`.\`order_id\`,\`order_sake_d\`.\`order_d_id\`, \`product_sake\`.\`pro_img\`, \`product_sake\`.\`pro_name\`, \`product_format\`.\`pro_capacity\`, \`shipment_detail\`.\`shipment_method\`, \`shipment_detail\`.\`shipment_address\`, \`payment_detail\`.\`card_num\`
-  FROM \`order_sake_d\`
-  LEFT JOIN \`order_main\` ON \`order_main\`.\`order_id\` = \`order_sake_d\`.\`order_id\`
-  LEFT JOIN \`product_sake\` ON \`order_sake_d\`.\`pro_id\` = \`product_sake\`.\`pro_id\`
-  LEFT JOIN \`product_format\` ON \`product_sake\`.\`format_id\` = \`product_format\`.\`format_id\`
-  LEFT JOIN \`shipment_detail\` ON \`order_main\`.\`order_id\` = \`shipment_detail\`.\`order_id\`
-  LEFT JOIN \`payment_detail\` ON \`order_main\`.\`order_id\` = \`payment_detail\`.\`order_id\`
-  WHERE \`member_id\` = ? ${sqlWhere} ORDER BY \`order_id\` DESC LIMIT ${
-    perPage * (page - 1)
-  }, ${perPage}`;
-  const [rs] = await db.query(sql, [memberId]);
-  const cRs = rs.map((v) => ({
-    ...v,
-    order_date: moment(v.order_date).format(fm),
-  }));
-  res.json(cRs);
+// 拿取訂購酒的詳細資料
+router.post("/order-sake", async (req, res) => {
+  const order_id = req.body.order_id
+    ? parseInt(req.body.order_id)
+    : "20220110001";
+  const sql = `SELECT omain.order_id, osd.order_quantity, osd.order_d_price,
+                omark.order_mark_id, mark.mark_name, ps.pro_name, ps.pro_img, pf.pro_price, pf.pro_capacity
+                FROM order_main omain
+
+                LEFT JOIN order_sake_d osd
+                ON omain.order_id = osd.order_id
+
+                LEFT JOIN order_mark omark
+                ON osd.order_d_id = omark.order_d_id
+
+                LEFT JOIN mark
+                ON omark.mark_id=mark.mark_id
+
+                LEFT JOIN product_sake ps
+                ON osd.pro_id=ps.pro_id
+
+                LEFT JOIN product_format pf
+                ON ps.pro_id=pf.format_id
+
+                WHERE omain.order_id =?;`;
+  const [result, fields] = await db.query(sql, [order_id]);
+  res.json(result);
 });
-// 已取消
-router.post("/member/orderListTab3", jwtVerify, async (req, res) => {
-  const memberId = res.locals.auth[0].member_id;
-  const fm = "YYYY-MM-DD";
-  let sqlWhere = "";
-  const perPage = 6; //一頁幾筆
-  //用戶要看第幾頁
-  let page = req.body.page ? parseInt(req.body.page) : 1;
-  if (memberId) sqlWhere += ` AND  order_state = '已取消'`;
-  const sql = `SELECT \`order_state\`, \`used_code\`, \`order_name\`, \`order_email\`, \`order_mobile\`, \`order_d_price\`, \`order_date\`, \`member_id\`, \`order_main\`.\`order_id\`,\`order_sake_d\`.\`order_d_id\`, \`product_sake\`.\`pro_img\`, \`product_sake\`.\`pro_name\`, \`product_format\`.\`pro_capacity\`, \`shipment_detail\`.\`shipment_method\`, \`shipment_detail\`.\`shipment_address\`, \`payment_detail\`.\`card_num\`
-  FROM \`order_sake_d\`
-  LEFT JOIN \`order_main\` ON \`order_main\`.\`order_id\` = \`order_sake_d\`.\`order_id\`
-  LEFT JOIN \`product_sake\` ON \`order_sake_d\`.\`pro_id\` = \`product_sake\`.\`pro_id\`
-  LEFT JOIN \`product_format\` ON \`product_sake\`.\`format_id\` = \`product_format\`.\`format_id\`
-  LEFT JOIN \`shipment_detail\` ON \`order_main\`.\`order_id\` = \`shipment_detail\`.\`order_id\`
-  LEFT JOIN \`payment_detail\` ON \`order_main\`.\`order_id\` = \`payment_detail\`.\`order_id\`
-  WHERE \`member_id\` = ? ${sqlWhere} ORDER BY \`order_id\` DESC LIMIT ${
-    perPage * (page - 1)
-  }, ${perPage}`;
-  const [rs] = await db.query(sql, [memberId]);
-  const cRs = rs.map((v) => ({
-    ...v,
-    order_date: moment(v.order_date).format(fm),
-  }));
-  res.json(cRs);
+// 拿取訂購禮盒的詳細資料
+router.post("/order-gift", async (req, res) => {
+  const order_id = req.body.order_id
+    ? parseInt(req.body.order_id)
+    : "20220110001";
+  const sql = `SELECT omain.order_id, og.order_quantity, og.order_d_price, 
+                og.gift_id, og.box_color, ogdd.pro_id, ps.pro_name, ps.pro_img, pf.pro_price, pf.pro_capacity, pg.gift_name
+                FROM order_main omain
+
+                LEFT JOIN order_gift_d og
+                ON omain.order_id=og.order_id
+
+                LEFT JOIN order_gift_d_d ogdd
+                ON og.order_g_id=ogdd.order_g_id
+
+                LEFT JOIN product_sake ps
+                ON ogdd.pro_id=ps.pro_id
+
+                LEFT JOIN product_format pf
+                ON ps.pro_id=pf.format_id
+
+                LEFT JOIN product_container pc
+                ON pf.container_id=pc.container_id
+
+                LEFT JOIN product_gift pg 
+                ON og.gift_id=pg.gift_id
+
+                WHERE omain.order_id =?;`;
+  const [result, fields] = await db.query(sql, [order_id]);
+  let tidyResult = [];
+  let twoInOne = {};
+  let twoInOne_cartGiftId = 0;
+  for (const i of result) {
+    if (i.gift_id === 3) {
+      if (i.cart_gift_id !== twoInOne_cartGiftId) {
+        twoInOne_cartGiftId = i.cart_gift_id;
+        console.log(twoInOne_cartGiftId);
+        twoInOne.cart_gift_id = i.cart_gift_id;
+        twoInOne.member_id = i.member_id;
+        twoInOne.order_quantity = i.order_quantity;
+        twoInOne.gift_id = i.gift_id;
+        twoInOne.gift_name = i.gift_name;
+        twoInOne.box_color = i.box_color;
+
+        twoInOne.pro_one = {
+          pro_id: i.pro_id,
+          pro_name: i.pro_name,
+          pro_img: i.pro_img,
+          pro_price: i.pro_price,
+          pro_capacity: i.pro_capacity,
+        };
+      } else {
+        twoInOne.pro_two = {
+          pro_id: i.pro_id,
+          pro_name: i.pro_name,
+          pro_img: i.pro_img,
+          pro_price: i.pro_price,
+          pro_capacity: i.pro_capacity,
+        };
+        tidyResult = [...tidyResult, { ...twoInOne }];
+      }
+    } else {
+      tidyResult = [...tidyResult, i];
+    }
+  }
+  console.log(tidyResult);
+  res.json(tidyResult);
+  // res.json(result);
 });
+// 拿取訂購丹的詳細資料
+router.post("/order-info", async (req, res) => {
+  const order_id = req.body.order_id
+    ? parseInt(req.body.order_id)
+    : "20220110001";
+  console.log(order_id);
+  const sql = `SELECT om.order_id, om.order_name, om.order_mobile, 
+                om.order_email, om.used_code, om.order_date, pd.card_num, sd.shipment_method, sd.ship_fee, sd.store_id, sd.receiver, sd.receiver_mobile, sd.shipment_address, sd.shipment_note, store.store_name, store.store_address FROM order_main om 
+                LEFT JOIN payment_detail pd
+                ON om.order_id=pd.order_id
+                LEFT JOIN shipment_detail sd
+                ON om.order_id=sd.order_id
+                LEFT JOIN store
+                ON sd.store_id = store.store_id
+
+                WHERE om.order_id =?;`;
+  const [result, fields] = await db.query(sql, [order_id]);
+  res.json(result);
+});
+
 
 // 帶會員id拿取活動記錄資料
 router.post("/member/MemberEventList", jwtVerify, async (req, res) => {
