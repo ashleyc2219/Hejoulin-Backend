@@ -44,7 +44,7 @@ router.post("/login", upload.none(), async (req, res) => {
 router.post("/register", upload.none(), async (req, res) => {
   const output = {
     success: false,
-    postData: req.body,
+    // postData: req.body,
     info: null,
     token: "",
     uId: "",
@@ -81,7 +81,7 @@ router.post("/register", upload.none(), async (req, res) => {
     }
   } catch (ex) {
     console.log(ex);
-    output.error = "Email 已被使用過";
+    output.error = "used";
   }
 
   res.json(output);
