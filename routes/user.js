@@ -599,9 +599,11 @@ router.post("/member/MemberOrderListTotal", jwtVerify, async (req, res) => {
 });
 // 拿取訂購酒的詳細資料
 router.post("/order-sake", async (req, res) => {
-  const order_id = req.body.order_id
-    ? parseInt(req.body.order_id)
-    : "20220110001";
+  const order_id = req.body.order_id;
+    // ? parseInt(req.body.order_id)
+    // : "20220110001";
+  console.log(order_id);
+
   const sql = `SELECT omain.order_id, osd.order_quantity, osd.order_d_price,
                 omark.order_mark_id, mark.mark_name, ps.pro_name, ps.pro_img, pf.pro_price, pf.pro_capacity
                 FROM order_main omain
@@ -627,9 +629,9 @@ router.post("/order-sake", async (req, res) => {
 });
 // 拿取訂購禮盒的詳細資料
 router.post("/order-gift", async (req, res) => {
-  const order_id = req.body.order_id
-    ? parseInt(req.body.order_id)
-    : "20220110001";
+  const order_id = req.body.order_id;
+    // ? parseInt(req.body.order_id)
+    // : "20220110001";
   const sql = `SELECT omain.order_id, og.order_quantity, og.order_d_price, 
                 og.gift_id, og.box_color, ogdd.pro_id, ps.pro_name, ps.pro_img, pf.pro_price, pf.pro_capacity, pg.gift_name
                 FROM order_main omain
@@ -668,6 +670,7 @@ router.post("/order-gift", async (req, res) => {
         twoInOne.gift_id = i.gift_id;
         twoInOne.gift_name = i.gift_name;
         twoInOne.box_color = i.box_color;
+        twoInOne.order_d_price = i.order_d_price;
 
         twoInOne.pro_one = {
           pro_id: i.pro_id,
@@ -696,9 +699,9 @@ router.post("/order-gift", async (req, res) => {
 });
 // 拿取訂購單的詳細資料
 router.post("/order-info", async (req, res) => {
-  const order_id = req.body.order_id
-    ? parseInt(req.body.order_id)
-    : "20220110001";
+  const order_id = req.body.order_id;
+    // ? parseInt(req.body.order_id)
+    // : "20220110001";
   console.log(order_id);
   const sql = `SELECT om.order_id, om.order_name, om.order_mobile, 
                 om.order_email, om.used_code, om.order_date, pd.card_num, sd.shipment_method, sd.ship_fee, sd.store_id, sd.receiver, sd.receiver_mobile, sd.shipment_address, sd.shipment_note, store.store_name, store.store_address FROM order_main om 
@@ -771,8 +774,7 @@ router.post("/member/MemberEventCancel", jwtVerify, async (req, res) => {
 });
 
 // 修改會員資料
-router
-  .route("/edit")
+router.route("/edit")
   .get(jwtVerify, async (req, res) => {
     const sql = `SELECT \`member_id\`,
                         \`user_account\`,
