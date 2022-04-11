@@ -567,7 +567,7 @@ router.post("/member/MemberOrderListTotal", jwtVerify, async (req, res) => {
       // tabData: ""
     };
 
-  const sql = `SELECT m.\`order_id\`, m.\`order_date\`, (SUM(s.\`order_d_price\`) + SUM(g.\`order_d_price\`)) AS total_price, s.\`order_state\`, g.\`order_state\`
+  const sql = `SELECT m.\`order_id\`, m.\`order_date\`, m.\`used_code\`, (SUM(s.\`order_d_price\`) + SUM(g.\`order_d_price\`)) AS total_price, s.\`order_state\`, g.\`order_state\`
                FROM \`order_main\` m 
                INNER JOIN \`order_sake_d\` s ON m.\`order_id\` = s.\`order_id\`
                INNER JOIN \`order_gift_d\` g ON m.\`order_id\` = g.\`order_id\`
@@ -675,7 +675,7 @@ router.post("/order-gift", async (req, res) => {
   res.json(tidyResult);
   // res.json(result);
 });
-// 拿取訂購丹的詳細資料
+// 拿取訂購單的詳細資料
 router.post("/order-info", async (req, res) => {
   const order_id = req.body.order_id
     ? parseInt(req.body.order_id)
