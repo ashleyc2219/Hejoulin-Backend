@@ -354,10 +354,10 @@ router.post("/member/MemberSublist", jwtVerify, async (req, res) => {
     order_date: rs1[0]["order_date"],
     order_state: rs1[0]["order_state"],
     sub_time: rs1[0]["sub_time"],
-    sub_id: rs2[0]["sub_id"]
+    sub_id: rs2[0]["sub_id"],
   };
 
-  let plan_name = function(sub_id) {
+  let plan_name = function (sub_id) {
     if (sub_id === 1) {
       return "純米";
     }
@@ -368,7 +368,7 @@ router.post("/member/MemberSublist", jwtVerify, async (req, res) => {
       return "純米大吟釀";
     }
   };
-  let plan_price = function(sub_id) {
+  let plan_price = function (sub_id) {
     if (sub_id === 1) {
       return 1300;
     }
@@ -389,7 +389,7 @@ router.post("/member/MemberSublist", jwtVerify, async (req, res) => {
       card_num: rs3[0]["card_num"],
       order_date: rs1[0]["order_date"],
       order_state: rs1[0]["order_state"],
-      sub_time: rs1[0]["sub_time"]
+      sub_time: rs1[0]["sub_time"],
     };
     new_data = [...new_data, data_row];
   });
@@ -402,6 +402,7 @@ router.post("/member/MemberSublist/over", jwtVerify, async (req, res) => {
   let sqlWhere = "";
   const fm = "YYYY-MM-DD";
   if (memberId) sqlWhere += ` AND \`order_sub_d\`.\`order_state\` = '已結束'`;
+
   const sql1 = `SELECT \`order_main\`.\`member_id\`,\`order_main\`.\`order_date\`,\`sub_time\`,\`order_sub_d\`.\`order_state\`,\`order_sub_d\`.\`subtime_id\`,\`order_sub_d\`.\`order_d_id\`,\`order_sub_d\`.\`order_id\`
     FROM \`order_sub_d\` 
     INNER JOIN \`order_main\` ON \`order_main\`.\`order_id\` = \`order_sub_d\`.\`order_id\`  
@@ -430,52 +431,17 @@ router.post("/member/MemberSublist/over", jwtVerify, async (req, res) => {
       "LEFT JOIN `order_main` ON `order_main`.`order_id` = `payment_detail`.`order_id`" +
       "WHERE `member_id` = ?";
 
-  const [rs3] = await db.query(sql3, [memberId]);
-  const sub_id_arr = JSON.parse(rs2[0].sub_id);
-  let new_data = [];
-  let info_data = {
-    order_id: rs1[0]["order_id"],
-    order_d_price: rs2[0]["order_d_price"],
-    card_num: rs3[0]["card_num"],
-    order_date: rs1[0]["order_date"],
-    order_state: rs1[0]["order_state"],
-    sub_time: rs1[0]["sub_time"],
-    sub_id: rs2[0]["sub_id"]
-  };
-
-  let plan_name = function(sub_id) {
-    if (sub_id === 1) {
-      return "純米";
-    }
-    if (sub_id === 2) {
-      return "純米吟釀";
-    }
-    if (sub_id === 3) {
-      return "純米大吟釀";
-    }
-  };
-  let plan_price = function(sub_id) {
-    if (sub_id === 1) {
-      return 1300;
-    }
-    if (sub_id === 2) {
-      return 1500;
-    }
-    if (sub_id === 3) {
-      return 1800;
-    }
-  };
-  sub_id_arr.forEach((sub_id) => {
-    const data_row = {
-      sub_id: sub_id,
-      plan_name: plan_name(sub_id),
-      plan_price: plan_price(sub_id),
+    const [rs3] = await db.query(sql3, [memberId]);
+    const sub_id_arr = JSON.parse(rs2[0].sub_id);
+    let new_data = [];
+    let info_data = {
       order_id: rs1[0]["order_id"],
       order_d_price: rs2[0]["order_d_price"],
       card_num: rs3[0]["card_num"],
       order_date: rs1[0]["order_date"],
       order_state: rs1[0]["order_state"],
-      sub_time: rs1[0]["sub_time"]
+      sub_time: rs1[0]["sub_time"],
+      sub_id: rs2[0]["sub_id"],
     };
 
     let plan_name = function (sub_id) {
@@ -512,13 +478,12 @@ router.post("/member/MemberSublist/over", jwtVerify, async (req, res) => {
         order_state: rs1[0]["order_state"],
         sub_time: rs1[0]["sub_time"],
       };
-      new_data = [...new_data, data_row];
     });
-    res.json([info_data, new_data]);
-  }else{
-    res.json('')
-  }
 
+    res.json([info_data, new_data]);
+  } else {
+    res.json("");
+  }
 
   // const output = {
   //   data1: rs1[0],
@@ -602,22 +567,21 @@ router.post("/member/MemberOrderList", jwtVerify, async (req, res) => {
 // 拿取訂單總覽資料
 router.post("/member/MemberOrderListTotal", jwtVerify, async (req, res) => {
   const memberId = res.locals.auth[0].member_id;
-  const fm = ("YYYY-MM-DD");
+  const fm = "YYYY-MM-DD";
   // const perPage = 6;//一頁幾筆
   //用戶要看第幾頁
   // let page = req.body.page ? parseInt(req.body.page) : 1;
   //輸出
-  const
-    output = {
-      //success: false,
-      // perPage,
-      // page,
-      // totalRows: 0,
-      // totalPages: 0,
-      // rows: [],
-      rs: ""
-      // tabData: ""
-    };
+  const output = {
+    //success: false,
+    // perPage,
+    // page,
+    // totalRows: 0,
+    // totalPages: 0,
+    // rows: [],
+    rs: "",
+    // tabData: ""
+  };
 
   const sql = `SELECT m.\`order_id\`, m.\`order_date\`, (SUM(s.\`order_d_price\`) + SUM(g.\`order_d_price\`)) AS total_price, s.\`order_state\`, g.\`order_state\`
                FROM \`order_main\` m 
@@ -627,7 +591,10 @@ router.post("/member/MemberOrderListTotal", jwtVerify, async (req, res) => {
                GROUP BY m.\`order_id\``;
 
   const [rs] = await db.query(sql, [memberId]);
-  output.rs = rs.map((v) => ({ ...v, order_date: moment(v.order_date).format(fm) }));
+  output.rs = rs.map((v) => ({
+    ...v,
+    order_date: moment(v.order_date).format(fm),
+  }));
   res.json(output);
 });
 // 拿取訂購酒的詳細資料
@@ -746,7 +713,6 @@ router.post("/order-info", async (req, res) => {
   const [result, fields] = await db.query(sql, [order_id]);
   res.json(result);
 });
-
 
 // 帶會員id拿取活動記錄資料
 router.post("/member/MemberEventList", jwtVerify, async (req, res) => {
