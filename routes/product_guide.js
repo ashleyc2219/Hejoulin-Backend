@@ -14,8 +14,8 @@ router.get("/", async (req, res) => {
     let where = ` WHERE 1`;
 
     // 搜尋關鍵字串接
-    if (taste) where += ` AND pf.pro_taste LIKE CONCAT ('%','${taste}','%')`;
-    if (temp) where += ` AND pf.pro_temp LIKE CONCAT ('%','${temp}','%')`;
+    if (taste) where += ` AND pf.pro_taste LIKE '%${taste}%'`;
+    if (temp) where += ` AND pf.pro_temp LIKE '%${temp}%'`;
     if (priceLow || priceHigh)
       where += ` AND pf.pro_price BETWEEN ${priceLow} AND ${priceHigh}`;
     if (!+gift) {
