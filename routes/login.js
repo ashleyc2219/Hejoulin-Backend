@@ -44,7 +44,7 @@ router.post("/login", upload.none(), async (req, res) => {
 router.post("/register", upload.none(), async (req, res) => {
   const output = {
     success: false,
-    postData: req.body,
+    // postData: req.body,
     info: null,
     token: "",
     uId: "",
@@ -81,7 +81,7 @@ router.post("/register", upload.none(), async (req, res) => {
     }
   } catch (ex) {
     console.log(ex);
-    output.error = "Email 已被使用過";
+    output.error = "used";
   }
 
   res.json(output);
@@ -142,118 +142,6 @@ router.post("/send-email", upload.none(), async (req, res) => {
         pass: "LetHejoulin04LogIn",
       }
     }); 
-
-    const options = {
-      // 寄件者
-      from: "hejoulin04@gmail.com",
-      // 收件者
-      to: to,
-      // 副本
-      cc: "hejoulin04@gmail.com",
-      // 密件副本
-      bcc: "hejoulin04@gmail.com",
-      // 主旨
-      subject: "禾酒林 : 密碼驗證信", // Subject line
-      // 純文字
-      text: "禾酒林 : 密碼驗證信", // plaintext body
-      // 嵌入 html 的內文
-      html: `
-          <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
-    <style>
-    .mail-container {
-      max-width: 350px;
-      height: fit-content;
-      box-shadow: 0px 0px 15px #9d9d9d6e;
-      margin: auto;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      flex-direction: column;
-      padding: 40px;
-    }
-    img {
-      width: 100%;
-      margin-top: 10px;
-      filter: drop-shadow(0 2px 1px rgba(128, 128, 128, 0.509));
-    }
-
-    .info {
-      width: 100%;
-      margin-top: 30px;
-      font-size: 14px;
-      color: #6c6c6c;
-      text-align: center;
-      border-bottom: 1px solid rgba(128, 128, 128, 0.267);
-      padding-bottom: 15px;
-    }
-
-    .verifycode {
-      width: 100%;
-      text-align: center;
-      margin-top: 20px;
-      font-size: 40px;
-      color: white;
-      background-color: #3D4349;
-      padding: 5px 20px;
-      border-radius: 5px;
-    }
-    </style>
-  </head>
-          <body>
-    <div class="mail-container">
-      <img src="https://i.imgur.com/kDJRSpK.png" alt="" />
-      <div class="info">
-        歡迎成為禾酒林會員，以下是您的驗證碼。<br />
-        輸入完驗證碼即可完成註冊流程
-      </div>
-      <div class="verifycode">` + verifyCode.slice(0, 3) + `-` + verifyCode.slice(3, 6) + `</div>
-                   </div>
-                   </body>
-          `
-    };
-
-    // 發送信件方法
-    await transporter.sendMail(options, function(error, info) {
-      if (error) {
-        console.log(error);
-      } else {
-        console.log("訊息發送: " + info.response);
-        res.status(200).send({ message: "success", message_id: info.messageId });
-      }
-    });
-  }
-
-});
-router.post("/resend-email", upload.none(), async (req, res) => {
-  let userAccount = req.body.userAccount;
-  const sqlGetId = "SELECT `user_id` FROM `user` WHERE `user_account` = ?"
-  const idGet = await db.query(sqlGetId, [userAccount])
-  console.log(idGet[0][0].user_id);
-  // 新增id進去產生驗證碼
-  const createVCode = "INSERT INTO `verify`(`verify_code`,`user_id`) VALUES (?, ?)";
-  const [insertVCode] = await db.query(createVCode, [getVerifyCode(6), idGet[0][0].user_id]);
-  console.log(insertVCode);
-  // 拿到驗證碼寄出
-  if (insertVCode.affectedRows === 1) {
-    const sql = "SELECT `verify_code` FROM verify WHERE user_id=?";
-    const [rs] = await db.query(sql, [idGet[0][0].user_id]);
-    const verifyCode = rs[0].verify_code;
-    const to = req.body.userAccount;
-    // 引用 nodemailer
-    const nodemailer = require("nodemailer");
-
-    // 宣告發信物件
-    const transporter = nodemailer.createTransport({
-      service: "Gmail",
-      auth: {
-        user: "hejoulin04@gmail.com",
-        pass: "LetHejoulin04LogIn",
-      }
-    });
 
     const options = {
       // 寄件者
