@@ -1,0 +1,23 @@
+# docker-compose.yml
+version: '3.8'
+
+services:
+  api:
+    image: devinlin11010/hejoulin-backend
+    ports:
+      - "3001:3001"
+    depends_on:
+      - mysql
+
+  mysql:
+    image: devinlin11010/mysql-sake-with-data
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+      - MYSQL_DATABASE=sake
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+volumes:
+  mysql-data:
