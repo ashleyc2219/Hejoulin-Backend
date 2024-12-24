@@ -1,4 +1,5 @@
 const express = require("express");
+require('express-async-errors');
 const app = express();
 const fs = require("fs").promises;
 // cors 跨源請求
@@ -36,8 +37,8 @@ app.use("/api/restaurant-pic", require("./routes/restaurant-pic"));
 app.use("/api/spmenu", require("./routes/spmenu"));
 app.use("/api/menu-pic", require("./routes/menu-pic"));
 app.use("/api/news", require("./routes/news"));
-app.use("/login", require("./routes/login"));
-app.use("/user", require("./routes/user"));
+app.use("/api/login", require("./routes/login"));
+app.use("/api/user", require("./routes/user"));
 app.use("/api/products-sake", require("./routes/products-sake"));
 app.use("/api/products-sake-filter", require("./routes/products-sake-filter"));
 app.use("/api/products-condition", require("./routes/products-condition"));
@@ -55,7 +56,46 @@ app.use("/api/gift_addcart", require("./routes/gift_addcart"));
 
 app.use("/api/mark", require("./routes/mark"));
 app.use("/api/event", require("./routes/event"));
-const port = 3001;
+app.use("/api/test", require("./routes/test"));
+
+const port = 3002;
+
+const errorHandler = (err, req, res, next) => {
+  // Set default values
+  err.statusCode = err.statusCode || 500;
+  err.status = err.status || 'error';
+
+  // Development error response (with stack trace)
+  if (process.env.NODE_ENV === 'development') {
+    res.status(err.statusCode).json({
+      status: err.status,
+      error: err,
+      message: err.message,
+      stack: err.stack
+    });
+  } 
+  // Production error response (clean, without sensitive info)
+  else {
+    // Operational, trusted error: send message to client
+    if (err.isOperational) {
+      res.status(err.statusCode).json({
+        status: err.status,
+        message: err.message
+      });
+    } 
+    // Programming or unknown error: don't leak error details
+    else {
+      console.error('ERROR 💥', err);
+      res.status(500).json({
+        status: 'error',
+        message: 'Something went wrong'
+      });
+    }
+  }};
+app.use(errorHandler);
+app.all("*", errorHandler);
 app.listen(port, () => {
   console.log(`server started ${port} - `, new Date());
 });
+
+
